@@ -2,9 +2,10 @@
   "name": "back-end",
   "version": "1.0.0",
   "description": "**2022-10-12** 14:58 git 연습",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app"
   },
   "repository": {
     "type": "git",
