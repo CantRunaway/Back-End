@@ -2,13 +2,14 @@ const express = require('express');
 const mysql = require("./config/mysql");
 const cors = require("cors");
 
-const port = 3000;
-const hostname = "localhost";
+const LocalPort = require("./config/LocalPort");
+const port = LocalPort.port;
+const hostname = LocalPort.host;
 const userRouter = require("./routers/userRouter");
 
 const app = express();
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || port);
 
 const server = async () => {
     try {
