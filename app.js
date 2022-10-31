@@ -12,7 +12,7 @@ app.set('port', process.env.PORT || 3000);
 const server = async () => {
     try {
         await mysql;
-        //app.use(cors({origin: "http://localhost:8080"}));
+        app.use(cors({origin: "http://localhost:8080"}));
         app.use(express.json());
         app.use("/users", userRouter);
 
