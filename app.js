@@ -1,24 +1,31 @@
 const express = require('express');
-const mysql = require('mysql');
-const dbconfig = require('./config/database.js');
-const connection = mysql.createConnection(dbconfig);
+const mysql = require("./config/mysql");
 
-connection.connect();
+const port = 3000;
+const hostname = "localhost";
+const userRouter = require("./routers/userRouter");
 
 const app = express();
 
 app.set('port', process.env.PORT || 3000);
 
-app.get('/', (req, res) => {
-    res.send('Root');
-})
+const server = async () => {
+    try {
+        await mysql;
+        //app.use(cors({origin: "http://localhost:8080"}));
+        app.use(express.json());
+        app.use("/users", userRouter);
 
-app.get('/users', (req, res) => {
-    connection.query('SELECT * from User', (error, rows) => {
-        if (error) res.status(400).send({error: "Select error"});
-        console.log('User info is: ', rows);
-        res.send(rows);
+        app.listen(port, hostname, () => {
+            console.log("DB connect SUCCESS");
+        });
+    }catch(error) {
+        console.log(error);
+        console.log("CB connect FAIL");
+    }
+    app.get("/", (req, res) => {
+        return res.send("Root");
     })
-});
+}
 
-app.listen(3000, () => console.log('3000번 포트에서 대기중'));
+server();
