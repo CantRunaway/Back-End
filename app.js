@@ -21,11 +21,8 @@ const server = async () => {
         });
     }catch(error) {
         console.log(error);
-        console.log("CB connect FAIL");
+        console.log("DB connect FAIL");
     }
-    app.get("/", (req, res) => {
-        return res.send("Root");
-    })
 }
 
 server();
