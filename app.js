@@ -14,8 +14,8 @@ app.get('/', (req, res) => {
 })
 
 app.get('/users', (req, res) => {
-    connection.query('SELECT * from Users', (error, rows) => {
-        if (error) throw error;
+    connection.query('SELECT * from User', (error, rows) => {
+        if (error) res.status(400).send({error: "Select error"});
         console.log('User info is: ', rows);
         res.send(rows);
     })
