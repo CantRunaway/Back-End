@@ -25,7 +25,7 @@ const server = async () => {
         app.use("/workType", workTypeRouter);
 
         app.listen(port, hostname, () => {
-            console.log("DB connect SUCCESS");
+            console.log("Connect");
         });
     }catch(error) {
         console.log(error);

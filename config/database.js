@@ -1,4 +1,4 @@
-const database = {
+const dataBase = {
     host: '202.31.202.172',
     user: '336',
     password: 'dlsrhdwlsmd',
@@ -6,6 +6,6 @@ const database = {
     database: 'domang'
 };
 
-Object.freeze(database);
+Object.freeze(dataBase);
 
-module.exports = database;
+module.exports = dataBase;
