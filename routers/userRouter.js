@@ -40,7 +40,8 @@ router.get("/deleteUser/:user_id", async (req, res) => {
 })
 
 router.post("/register", async(req, res) => {
-    const {user_id, password, name, grade, phone, account, birth, work_type_index, bank_index} = req.body;
+    console.log(req.body);
+    const {account, bank_index, birth, grade, name, password, phone, user_id, work_type_index} = req.body;
     await connection.query(`Insert Into User(user_id, password, user_type, name, grade, phone, account, birth, registration_state, work_type_index, bank_index) values ('${user_id}', md5('${password}'), 2,'${name}','${grade}', hex(aes_encrypt('${phone}', '${encryptionKey}')),  hex(aes_encrypt('${account}', '${encryptionKey}')), '${birth}', 0, '${work_type_index}', '${bank_index}')`, (err, rows) => {
         if (err) throw err;
         console.log("User Insert Successed");
@@ -57,8 +58,14 @@ router.post("/login", async(req, res) => {
     });
 });
 
+router.get("/", async(req, res) => {
+    await connection.query(`Select * from User`), (err, rows) => {
+        console.log(rows);
+        res.send(rows);
+    }
+})
 router.post("/update", async(req, res) => {
-    const {password, name, grade, phone, account, birth, work_type_name, bank_name, department_name} = req.body;
+    const {user_id, password, name, grade, phone, account, birth, work_type_index, bank_index} = req.body;
     console.log(req.body);
     await connection.query(`Update User set 
     password = CASE WHEN md5('${password}') != password AND '${password}' IS NOT NULL THEN md5('${password}') ELSE password END, 
