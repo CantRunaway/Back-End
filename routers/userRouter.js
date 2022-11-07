@@ -58,12 +58,7 @@ router.post("/login", async(req, res) => {
     });
 });
 
-router.get("/", async(req, res) => {
-    await connection.query(`Select * from User`), (err, rows) => {
-        console.log(rows);
-        res.send(rows);
-    }
-})
+
 router.post("/update", async(req, res) => {
     const {user_id, password, name, grade, phone, account, birth, work_type_index, bank_index} = req.body;
     console.log(req.body);
