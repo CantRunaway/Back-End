@@ -41,8 +41,8 @@ router.get("/deleteUser/:user_id", async (req, res) => {
 
 router.post("/register", async(req, res) => {
     console.log(req.body);
-    const {account, bank_index, birth, grade, name, password, phone, user_id, work_type_index} = req.body;
-    await connection.query(`Insert Into User(user_id, password, user_type, name, grade, phone, account, birth, registration_state, work_type_index, bank_index) values ('${user_id}', md5('${password}'), 2,'${name}','${grade}', hex(aes_encrypt('${phone}', '${encryptionKey}')),  hex(aes_encrypt('${account}', '${encryptionKey}')), '${birth}', 0, '${work_type_index}', '${bank_index}')`, (err, rows) => {
+    const {account, bank_index, birth, grade, name, password, phone, user_id, work_type_index, department_index} = req.body;
+    await connection.query(`Insert Into User(user_id, password, user_type, name, grade, phone, account, birth, registration_state, work_type_index, bank_index, department_index, work_state) values ('${user_id}', md5('${password}'), 2,'${name}','${grade}', hex(aes_encrypt('${phone}', '${encryptionKey}')),  hex(aes_encrypt('${account}', '${encryptionKey}')), '${birth}', 0, '${work_type_index}', '${bank_index}', '${department_index}', '0')`, (err, rows) => {
         if (err) throw err;
         console.log("User Insert Successed");
         res.send(rows);
@@ -53,8 +53,8 @@ router.post("/login", async(req, res) => {
     const {user_id, password} = req.body;
     await connection.query(`Select exists (select user_index from User where user_id = '${user_id}' and password = md5('${password}')) as exist`, (err, rows) => {
         console.log(rows);
-        if (rows[0].exist == 1) res.send("Login OK");
-        else res.send("Login Fail");
+        if (rows[0].exist == 1) res.send(true);
+        else res.send(false);
     });
 });
 
@@ -72,11 +72,11 @@ router.post("/update", async(req, res) => {
     work_type_index = CASE WHEN (Select work_type_index from work_type where work_type_name = '${work_type_name}') != work_type_index Then (Select work_type_index from work_type where work_type_name = '${work_type_name}') ELSE work_type_index END,
     bank_index = CASE WHEN (Select bank_index from bank where bank_name = '${bank_name}') != bank_index Then (Select bank_index from bank where bank_name = '${bank_name}') ELSE bank_index END,
     department_index = CASE WHEN (Select department_index from department where department_name = '${department_name}') != department_index Then (Select department_index from department where department_name = '${department_name}') ELSE department_index END
-    Where user_id = 'admin' and password = '4752d51bd71f704beec34b798c76ca9e'`, (err, rows) => {
+    Where user_id = '${user_id}' and password = '4752d51bd71f704beec34b798c76ca9e'`, (err, rows) => {
         console.log(rows);
         if (err) throw err;
         res.send(rows);
     });
-});
+});//name으로 된거 전부 index로 변경
 
 module.exports = router;
