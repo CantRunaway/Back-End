@@ -9,6 +9,9 @@ const userRouter = require("./routers/userRouter");
 const bankRouter = require("./routers/bankRouter");
 const departmentRouter = require("./routers/departmentRouter");
 const workTypeRouter = require("./routers/workTypeRouter");
+const recruitRouter = require("./routers/recruitRouter");
+const overtimeRouter = require("./routers/overtimeRouter");
+const absenceRouter = require("./routers/absenceRouter");
 
 const app = express();
 
@@ -23,6 +26,9 @@ const server = async () => {
         app.use("/bank", bankRouter);
         app.use("/department", departmentRouter);
         app.use("/workType", workTypeRouter);
+        app.use("/recruit", recruitRouter);
+        app.use("/overtime", overtimeRouter);
+        app.use("/absence", absenceRouter);
 
         app.listen(port, hostname, () => {
             console.log("Connect");

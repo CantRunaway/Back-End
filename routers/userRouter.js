@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const connection = require("../config/mysql");
 const key = require("../config/encryptionKey");
+const status = require('../config/applyStatus');
+const userType = require('../config/userTypeStatus');
+const commuteType = require('../config/commuteTypeStatus');
 const encryptionKey = key.key;
 
 router.get("/userList", async (req, res) => {
@@ -9,7 +12,7 @@ router.get("/userList", async (req, res) => {
     Join work_type wt, bank b
      Where u.work_type_index = wt.work_type_index
      And u.bank_index = b.bank_index
-     And u.user_type = 2`, (error, rows) => {
+     And u.user_type = '${userType.worker}'`, (error, rows) => {
         if (error) throw error;
         console.log("User info is: ",rows);
         res.send(rows);
@@ -22,7 +25,7 @@ router.get("/userList/:name", async (req, res) => {
     Join work_type wt, bank b
      Where u.work_type_index = wt.work_type_index
      And u.bank_index = b.bank_index
-     And u.user_type = 2
+     And u.user_type = '${userType.worker}'
      And u.name = '${name}'`, (error, rows) => {
         if (error) throw error;
         console.log("User Info Detail is: ", rows);
@@ -42,12 +45,23 @@ router.get("/deleteUser/:user_id", async (req, res) => {
 router.post("/register", async(req, res) => {
     console.log(req.body);
     const {account, bank_index, birth, grade, name, password, phone, user_id, work_type_index, department_index} = req.body;
-    await connection.query(`Insert Into User(user_id, password, user_type, name, grade, phone, account, birth, registration_state, work_type_index, bank_index, department_index, work_state) values ('${user_id}', md5('${password}'), 2,'${name}','${grade}', hex(aes_encrypt('${phone}', '${encryptionKey}')),  hex(aes_encrypt('${account}', '${encryptionKey}')), '${birth}', 0, '${work_type_index}', '${bank_index}', '${department_index}', '0')`, (err, rows) => {
+    await connection.query(`Insert Into User(user_id, password, user_type, name, grade, phone, account, birth, registration_state, work_type_index, bank_index, department_index, work_state) values ('${user_id}', md5('${password}'), '${userType.worker}','${name}','${grade}', hex(aes_encrypt('${phone}', '${encryptionKey}')),  hex(aes_encrypt('${account}', '${encryptionKey}')), '${birth}', '${status.waiting}', '${work_type_index}', '${bank_index}', '${department_index}', '${commuteType.leave_work}')`, (err, rows) => {
         if (err) throw err;
         console.log("User Insert Successed");
         res.send(rows);
     });
 });
+
+router.post("/register/response", async(req, res) => {
+    console.log(req.body);
+    const {status, user_id} = req.body;
+    await connection.query(`Update User set registration_state = '${status}' Where user_id = '${user_id}'`, (err, rows) => {
+        if (err) throw err;
+        else {
+            res.send(rows);
+        }
+    })
+})
 
 router.post("/login", async(req, res) => {
     const {user_id, password} = req.body;
