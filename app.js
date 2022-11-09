@@ -12,6 +12,7 @@ const workTypeRouter = require("./routers/workTypeRouter");
 const recruitRouter = require("./routers/recruitRouter");
 const overtimeRouter = require("./routers/overtimeRouter");
 const absenceRouter = require("./routers/absenceRouter");
+const scheduleRouter = require("./routers/scheduleRouter");
 
 const app = express();
 
@@ -29,6 +30,7 @@ const server = async () => {
         app.use("/recruit", recruitRouter);
         app.use("/overtime", overtimeRouter);
         app.use("/absence", absenceRouter);
+        app.use("/schedule", scheduleRouter);
 
         app.listen(port, hostname, () => {
             console.log("Connect");
