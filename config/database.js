@@ -3,7 +3,8 @@ const dataBase = {
     user: '336',
     password: 'dlsrhdwlsmd',
     port : '25',
-    database: 'domang'
+    database: 'domang',
+    connectionLimit: 50
 };
 
 Object.freeze(dataBase);

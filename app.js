@@ -1,5 +1,4 @@
 const express = require('express');
-const mysql = require("./config/mysql");
 const cors = require("cors");
 
 const LocalPort = require("./config/LocalPort");
@@ -20,7 +19,6 @@ app.set('port', process.env.PORT || port);
 
 const server = async () => {
     try {
-        await mysql;
         app.use(cors({origin: "http://localhost:3000"}));
         app.use(express.json());
         app.use("/users", userRouter);
