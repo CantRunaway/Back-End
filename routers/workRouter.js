@@ -31,7 +31,7 @@ router.post("/", async(req, res) => {
                 SELECT * FROM Enrollment
                 WHERE enrollment_day = '${work_day}'
                 AND user_index = '${user_index}'
-                ANd schedule_index = ?)`, [resultList, resultList2]);//매핑 확인
+                AND schedule_index exists ?)`, [[resultList], [resultList]]);//매핑 확인
 
         await connection.commit();
         return res.status(200).json(result);
