@@ -11,11 +11,13 @@ router.get("/userList", async (req, res) => {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
-        const [result] = await connection.query(`Select user_id, name, grade, convert(aes_decrypt(unhex(phone), '${encryptionKey}') using utf8) as 'phone', convert(aes_decrypt(unhex(account), '${encryptionKey}') using utf8) as 'account', date_format(birth, '%Y-%m-%d') as birth, wt.work_type_name, b.bank_name from User u
-        Join work_type wt, bank b
+        const [result] = await connection.query(`Select user_id, name, grade, convert(aes_decrypt(unhex(phone), '${encryptionKey}') using utf8) as 'phone', convert(aes_decrypt(unhex(account), '${encryptionKey}') using utf8) as 'account', date_format(birth, '%Y-%m-%d') as birth, wt.work_type_name, b.bank_name , d.department_name as major from User u
+        Join work_type wt, bank b, department d
         Where u.work_type_index = wt.work_type_index
         And u.bank_index = b.bank_index
-        And u.user_type = '${userType.worker}'`);
+        And u.user_type = '${userType.worker}'
+        And u.department_index = d.department_index
+        `);
         await connection.commit();
         return res.json(result);
     }catch(err) {

@@ -54,18 +54,20 @@ router.get("/", async(req, res) => {
     }
 });
 
-router.get("/:user_index", async(req, res) => {
-    const user_index = req.params.user_index;
+router.get("/:user_id", async(req, res) => {
+    const user_id = req.params.user_id;
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
+
+
         const [result] = await connection.query(`SELECT us.name, en.enrollment_day, sc.start_time, sc.end_time FROM Enrollment en
         JOIN User us on en.user_index = us.user_index
         JOIN Schedule sc on en.schedule_index = sc.schedule_index
-        WHERE en.user_index = '${user_index}'`);
+        WHERE en.user_index = (SELECT user_index FROM User Where user_id = '${user_id}');`);
         
-            await connection.commit();
-            return res.status(200).json(result);
+        await connection.commit();
+        return res.status(200).json(result);
     }catch(err) {
         await connection.rollback();
         return res.status(400).json(err);
