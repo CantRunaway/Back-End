@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const pool = require("../config/connectionPool");
+const status = require("../config/applyStatus");
+const userType = require("../config/userTypeStatus");
 
 const getScheduleIndex = (time) => {
     const times = time.split(":");
@@ -53,4 +55,17 @@ router.get("/", async(req, res) => {
     }
 })
 
+router.get("/worker", async(req, res) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [result] = await connection.query(`select name from user where registration_state = '${status.approval}' and user_type = '${userType.worker}'`);
+
+        return res.status(200).json(result);
+    }catch(err) {
+        return res.status(400).json(err);
+    }finally {
+        connection.release();
+    }
+})
 module.exports = router;

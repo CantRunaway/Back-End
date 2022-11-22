@@ -28,6 +28,26 @@ router.get("/userList", async (req, res) => {
     }
 });
 
+router.get("/userList/wating", async (req, res) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [result] = await connection.query(`Select user_index, user_id, name, grade, convert(aes_decrypt(unhex(phone), '${encryptionKey}') using utf8) as 'phone', date_format(birth, '%Y-%m-%d') as birth, wt.work_type_name, d.department_name as major from User u
+        Join work_type wt,  department d
+        Where u.work_type_index = wt.work_type_index
+        And u.department_index = d.department_index
+        And u.registration_state = '${status.waiting}'
+        `);
+        await connection.commit();
+        return res.json(result);
+    }catch(err) {
+        await connection.rollback();
+        return res.status(400).json(err);
+    }finally {
+        connection.release();
+    }
+});
+
 
 router.get("/userList/:name", async (req, res) => {
     const name = req.params.name;
