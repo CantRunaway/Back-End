@@ -20,7 +20,7 @@ router.post("/", async(req, res) => {
         let resultList = [];
 
         for (let i = start_index; i <= end_index; i++) {
-            resultList.push(`${i}`);
+            resultList.push([`${work_day}`, `${user_index}`, `${i}`]);
         }
         
         const result = await connection.query(`INSERT INTO Work (work_day, user_index, schedule_index) values ?`, [resultList]);//매핑 확인
