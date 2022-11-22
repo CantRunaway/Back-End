@@ -42,5 +42,22 @@ router.post("/response", async(req, res) => {
     
 });
 
+router.get("/", async(req, res) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [result] = await connection.query(`select u.name, u.user_id, r.work_start, r.work_end, w.work_type_name from overtime o
+        join User u, recruit r, work_type w
+        where o.user_index = u.user_index
+        and o.recruit_index = r.recruit_index
+        and date_format(r.work_start, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')`);
+
+        return res.json(result);
+    }catch(err) {
+        return res.status(400).json(err);
+    }finally {
+        connection.release();
+    }
+})//오늘 임시 근로자 추출
 
 module.exports = router;

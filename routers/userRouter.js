@@ -155,6 +155,6 @@ router.post("/update", async(req, res) => {
     }
 
     
-});//name으로 된거 전부 index로 변경
+});
 
 module.exports = router;
