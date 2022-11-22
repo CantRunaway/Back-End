@@ -128,7 +128,7 @@ router.post("/login", async(req, res) => {
 
 
 router.post("/update", async(req, res) => {
-    const {user_id, password, name, grade, phone, account, birth, work_type_index, bank_index} = req.body;
+    const {user_id, password, name, grade, phone, account, birth, work_type_index, bank_index, department_index} = req.body;
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -140,10 +140,10 @@ router.post("/update", async(req, res) => {
         phone = CASE WHEN '${phone}' != hex(aes_encrypt('${phone}', '${encryptionKey}')) AND '${phone}' IS NOT NULL THEN hex(aes_encrypt('${phone}', '${encryptionKey}')) ELSE phone END,
         account = CASE WHEN '${account}' != hex(aes_encrypt('${account}', '${encryptionKey}')) AND '${account}' IS NOT NULL THEN hex(aes_encrypt('${account}', '${encryptionKey}')) ELSE account END,
         birth = CASE WHEN '${birth}' != birth THEN '${birth}' ELSE birth END,
-        work_type_index = CASE WHEN (Select work_type_index from work_type where work_type_name = '${work_type_name}') != work_type_index Then (Select work_type_index from work_type where work_type_name = '${work_type_name}') ELSE work_type_index END,
-        bank_index = CASE WHEN (Select bank_index from bank where bank_name = '${bank_name}') != bank_index Then (Select bank_index from bank where bank_name = '${bank_name}') ELSE bank_index END,
-        department_index = CASE WHEN (Select department_index from department where department_name = '${department_name}') != department_index Then (Select department_index from department where department_name = '${department_name}') ELSE department_index END
-        Where user_id = '${user_id}' and password = '4752d51bd71f704beec34b798c76ca9e'`);
+        work_type_index = CASE WHEN '${work_type_index}' != work_type_index Then '${work_type_index}' ELSE work_type_index END,
+        bank_index = CASE WHEN '${bank_index}' != bank_index Then '${bank_index}' ELSE bank_index END,
+        department_index = CASE WHEN '${department_index}' != department_index Then '${department_index}' ELSE department_index END
+        Where user_id = '${user_id}'`);
 
         await connection.commit();
         return res.json(result);
