@@ -22,16 +22,8 @@ router.post("/", async(req, res) => {
         for (let i = start_index; i <= end_index; i++) {
             resultList.push(`${i}`);
         }
-        let resultList2 = resultList;
-        console.log(resultList);
         
-        const result = await connection.query(`INSERT INTO Work (work_day, user_index, schedule_index)
-        SELECT * FROM (SELECT '${work_day}' as enrollment_day, '${user_index}' as user_index, ? as schedule_index) AS en
-            WHERE NOT EXISTS (
-                SELECT * FROM Enrollment
-                WHERE enrollment_day = '${work_day}'
-                AND user_index = '${user_index}'
-                AND schedule_index exists ?)`, [[resultList], [resultList]]);//매핑 확인
+        const result = await connection.query(`INSERT INTO Work (work_day, user_index, schedule_index) values ?`, [resultList]);//매핑 확인
 
         await connection.commit();
         return res.status(200).json(result);
