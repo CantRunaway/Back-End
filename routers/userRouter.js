@@ -49,6 +49,7 @@ router.get("/userList/:name", async (req, res) => {
     }
 });
 
+
 router.get("/deleteUser/:user_id", async (req, res) => {
     const user_id = req.params.user_id;
     const connection = await pool.getConnection();
