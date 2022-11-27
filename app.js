@@ -17,6 +17,7 @@ const enrollmentRouter = require("./routers/enrollmentRouter");
 const workRouter = require("./routers/workRouter");
 const wageRouter = require("./routers/wageRouter");
 const temporalRouter = require("./routers/temporalRouter");
+const commuteRouter = require("./routers/commuteRouter");
 
 const app = express();
 
@@ -38,6 +39,7 @@ const server = async () => {
         app.use("/work", workRouter);
         app.use("/wage", wageRouter);
         app.use("/temporal", temporalRouter);
+        app.use("/commute", commuteRouter);
 
         app.listen(port, hostname, () => {
             console.log("Connect");
