@@ -28,6 +28,22 @@ router.get("/userList", async (req, res) => {
     }
 });
 
+router.get("/workList", async(req, res) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [result] = await connection.query(`select u.user_id, u.name, w.work_type_name from User u
+        Join work_type w
+        Where u.work_type_index = w.work_type_index`);
+        return res.status(200).json(result);
+    }
+    catch(err) {
+        return res.status(400).json(err);
+    }finally{
+        connection.release();
+    }
+})
+
 router.get("/userList/wating", async (req, res) => {
     const connection = await pool.getConnection();
     try {
