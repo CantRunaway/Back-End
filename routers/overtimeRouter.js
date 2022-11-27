@@ -46,11 +46,11 @@ router.get("/", async(req, res) => {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
-        const [result] = await connection.query(`select u.name, u.user_id, r.work_start, r.work_end, w.work_type_name from overtime o
+        const [result] = await connection.query(`select u.name, u.user_id, date_format(r.work_start, '%Y-%m-%d %H:%i:%s') as work_start, date_format(r.work_end, '%Y-%m-%d %H:%i:%s') as work_end , w.work_type_name from overtime o
         join User u, recruit r, work_type w
         where o.user_index = u.user_index
         and o.recruit_index = r.recruit_index
-        and date_format(r.work_start, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')`);
+        and date_format(r.work_start, '%Y-%m-%d') >= date_format(now(), '%Y-%m-%d')`);
 
         return res.json(result);
     }catch(err) {
