@@ -277,4 +277,22 @@ router.post("/update", async(req, res) => {
     
 });
 
+router.get("/commute/:user_id", async(req, res) => {
+    const user_id = req.params.user_id;
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const [result] = await connection.query(`select work_state from User where user_id = '${user_id}'`);
+
+        await connection.commit();
+        return res.status(200).json(result);
+    }catch(err) {
+        await connection.rollback();
+        return res.status(400).json(err);
+    }finally {
+        connection.release();
+    }
+})
+
 module.exports = router;
