@@ -48,7 +48,7 @@ router.get("/", async (req, res) => {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
-        const [result] = await connection.query(`select u.name, u.user_id, date_format(a.absence_start, '%Y-%m-%d %H:%i:%s') as work_start, date_format(a.absence_end, '%Y-%m-%d %H:%i:%s') as work_end, w.work_type_name from absence a
+        const [result] = await connection.query(`select a.absence_index, u.name, u.user_id, date_format(a.absence_start, '%Y-%m-%d %H:%i:%s') as work_start, date_format(a.absence_end, '%Y-%m-%d %H:%i:%s') as work_end, w.work_type_name from absence a
         join user u, work_type w
         where a.user_index = u.user_index
         and u.work_type_index = w.work_type_index
