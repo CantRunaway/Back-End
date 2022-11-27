@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require("../config/connectionPool");
 const status = require('../config/applyStatus');
+const recruitStatus = require('../config/recruitStatus');
 
 router.post("/", async(req, res) => {
     const {user_index, recruit_index} = req.body;
@@ -41,6 +42,8 @@ router.post("/response", async(req, res) => {
     }
     
 });
+
+//프로시져 요청
 
 router.get("/", async(req, res) => {
     const connection = await pool.getConnection();

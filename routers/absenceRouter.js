@@ -44,6 +44,66 @@ router.post("/response", async(req, res) => {
     }
 });
 
+router.post("/admit", async(req, res) => {
+    ids = req.body;
+    let query = ``;
+    if (ids.length == 1) {
+        query = `update absence set absence_state = '${status.approval}' where absence_index = '${ids[0]}''`;
+    }
+    else if (ids.length > 1) {
+        query = `update absence a join (select '${ids[0]}' as id, '${status.approval}' as state `;
+        for (let i = 1; i < ids.length; i++) {
+            query += (`union all select '${ids[i]}', '${status.approval}'`)
+        }
+        query += (`) vals on a.absence_index = vals.id set absence_state = state`)
+    }
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const result = await connection.query(query);
+
+        await connection.commit();
+        return res.status(200).json(result);
+    }catch(err) {
+        await connection.rollback();
+        return res.status(400).json(err);
+    } finally {
+        connection.release();
+    }
+    
+})
+
+router.post("/refuse", async(req, res) => {
+    ids = req.body;
+    let query = ``;
+    if (ids.length == 1) {
+        query = `update absence set absence_state = '${status.refuse}' where absence_index = '${ids[0]}''`;
+    }
+    else if (ids.length > 1) {
+        query = `update absence a join (select '${ids[0]}' as id, '${status.refuse}' as state `;
+        for (let i = 1; i < ids.length; i++) {
+            query += (`union all select '${ids[i]}', '${status.refuse}'`)
+        }
+        query += (`) vals on a.absence_index = vals.id set absence_state = state`)
+    }
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const result = await connection.query(query);
+
+        await connection.commit();
+        return res.status(200).json(result);
+    }catch(err) {
+        await connection.rollback();
+        return res.status(400).json(err);
+    } finally {
+        connection.release();
+    }
+    
+})
+
 router.get("/", async (req, res) => {
     const connection = await pool.getConnection();
     try {
