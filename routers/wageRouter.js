@@ -7,12 +7,30 @@ router.get("/", async(req, res) => {
     try {
         await connection.beginTransaction();
 
-        const [result] = await connection.query(`select wo.work_type_name, date_format(w.change_date, '%Y-%m-%d %H:%i:%s') as change_date, w.hour_wage from wage w
+        const [result] = await connection.query(`select wo.work_type_index, wo.work_type_name, date_format(w.change_date, '%Y-%m-%d') as change_date, w.hour_wage from wage w
         join work_type wo
         where w.work_type_index = wo.work_type_index`);
 
         return res.status(200).json(result);
     }catch(err) {
+        return res.status(400).json(err);
+    }finally {
+        connection.release();
+    }
+})
+
+router.post("/", async(req, res) => {
+    const {work_type_name, change_date, wage} = req.body;
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const result = await connection.query(`call Make_work_type_wage('${work_type_name}', '${change_date}', '${wage}')`)
+
+        await connection.commit();
+        return res.status(200).json(result);
+    }catch(err) {
+        await connection.rollback();
         return res.status(400).json(err);
     }finally {
         connection.release();

@@ -3,29 +3,29 @@ const router = express.Router();
 const pool = require("../config/connectionPool");
 const status = require('../config/applyStatus');
 
-router.post("/", async(req, res) => {
-    const {absence_start, absence_end, user_index} = req.body;
+router.post("/", async (req, res) => {
+    const { absence_start, absence_end, user_index } = req.body;
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
 
         const result = await connection.query(`Insert Into Absence(absence_state, absence_start, absence_end, user_index) values ('${status.waiting}', '${absence_start}', '${absence_end}', '${user_index}')`)
-        
+
         await connection.commit();
-        
+
         return res.json(result);
-    } catch(err) {
-        
+    } catch (err) {
+
         await connection.rollback();
         return res.status(400).json(err);
-    }finally {
+    } finally {
         connection.release();
     }
-    
+
 });
 
-router.post("/response", async(req, res) => {
-    const {absence_state, absence_index} = req.body;
+router.post("/response", async (req, res) => {
+    const { absence_state, absence_index } = req.body;
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -35,7 +35,7 @@ router.post("/response", async(req, res) => {
         await connection.commit();
 
         return res.json(result);
-    } catch(err) {
+    } catch (err) {
 
         await connection.rollback();
         return res.status(400).json(err);
@@ -44,19 +44,16 @@ router.post("/response", async(req, res) => {
     }
 });
 
-router.post("/admit", async(req, res) => {
+router.post("/admit", async (req, res) => {
     ids = req.body;
     let query = ``;
-    if (ids.length == 1) {
-        query = `update absence set absence_state = '${status.approval}' where absence_index = '${ids[0]}''`;
+
+    query = `update absence a join (select '${ids[0]}' as id, '${status.approval}' as state `;
+    for (let i = 1; i < ids.length; i++) {
+        query += (`union all select '${ids[i]}', '${status.approval}'`)
     }
-    else if (ids.length > 1) {
-        query = `update absence a join (select '${ids[0]}' as id, '${status.approval}' as state `;
-        for (let i = 1; i < ids.length; i++) {
-            query += (`union all select '${ids[i]}', '${status.approval}'`)
-        }
-        query += (`) vals on a.absence_index = vals.id set absence_state = state`)
-    }
+    query += (`) vals on a.absence_index = vals.id set absence_state = state`)
+
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -65,28 +62,25 @@ router.post("/admit", async(req, res) => {
 
         await connection.commit();
         return res.status(200).json(result);
-    }catch(err) {
+    } catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
     } finally {
         connection.release();
     }
-    
+
 })
 
-router.post("/refuse", async(req, res) => {
+router.post("/refuse", async (req, res) => {
     ids = req.body;
     let query = ``;
-    if (ids.length == 1) {
-        query = `update absence set absence_state = '${status.refuse}' where absence_index = '${ids[0]}''`;
+
+    query = `update absence a join (select '${ids[0]}' as id, '${status.refuse}' as state `;
+    for (let i = 1; i < ids.length; i++) {
+        query += (`union all select '${ids[i]}', '${status.refuse}'`)
     }
-    else if (ids.length > 1) {
-        query = `update absence a join (select '${ids[0]}' as id, '${status.refuse}' as state `;
-        for (let i = 1; i < ids.length; i++) {
-            query += (`union all select '${ids[i]}', '${status.refuse}'`)
-        }
-        query += (`) vals on a.absence_index = vals.id set absence_state = state`)
-    }
+    query += (`) vals on a.absence_index = vals.id set absence_state = state`)
+
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -95,13 +89,13 @@ router.post("/refuse", async(req, res) => {
 
         await connection.commit();
         return res.status(200).json(result);
-    }catch(err) {
+    } catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
     } finally {
         connection.release();
     }
-    
+
 })
 
 router.get("/", async (req, res) => {
@@ -113,11 +107,11 @@ router.get("/", async (req, res) => {
         where a.user_index = u.user_index
         and u.work_type_index = w.work_type_index
         and date_format(a.absence_start, '%Y-%m-%d') >= date_format(now(), '%Y-%m-%d')`);
-        
+
         return res.status(200).json(result);
-    }catch(err) {
+    } catch (err) {
         return res.status(400).json(err);
-    }finally{
+    } finally {
         connection.release();
     }
 })//오늘 결근자 확인

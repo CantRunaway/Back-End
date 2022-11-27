@@ -20,10 +20,10 @@ router.get("/userList", async (req, res) => {
         `);
         await connection.commit();
         return res.json(result);
-    }catch(err) {
+    } catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
-    }finally {
+    } finally {
         connection.release();
     }
 });
@@ -43,30 +43,30 @@ router.get("/userList/:user_id", async (req, res) => {
         `);
         await connection.commit();
         return res.json(result);
-    }catch(err) {
+    } catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
-    }finally {
+    } finally {
         connection.release();
     }
 });
 
-router.get("/workList", async(req, res) => {
+router.get("/workList", async (req, res) => {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
         const [result] = await connection.query(`select u.user_id, u.name, w.work_type_name from User u
         Join work_type w
         Where u.work_type_index = w.work_type_index`);
-        
+
         await connection.commit();
         return res.json(result);
-        
+
     }
-    catch(err) {
+    catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
-    }finally{
+    } finally {
         connection.release();
     }
 })
@@ -75,20 +75,20 @@ router.get("/userLists/wating", async (req, res) => {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
-        
+
         const [result] = await connection.query(`select user_index, user_id, name, grade, convert(aes_decrypt(unhex(phone), '${encryptionKey}') using utf8) as 'phone', date_format(birth, '%Y-%m-%d') as birth, wt.work_type_name, d.department_name as major from User u
         Join work_type wt,  department d
         Where u.work_type_index = wt.work_type_index
         And u.department_index = d.department_index
         And u.registration_state = '${status.waiting}'`)
-        
-        
+
+
         await connection.commit();
         return res.status(200).json(result);
-    }catch(err) {
+    } catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
-    }finally {
+    } finally {
         connection.release();
     }
 });
@@ -106,10 +106,10 @@ router.get("/userList/:name", async (req, res) => {
          And u.name = '${name}'`);
         await connection.commit();
         return res.json(result);
-    }catch(err) {
+    } catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
-    }finally {
+    } finally {
         connection.release();
     }
 });
@@ -125,8 +125,8 @@ router.post("/deleteUser", async (req, res) => {
         query = `Delete From User Where user_id in (`;
         for (let i = 0; i < ids.length; i++) {
             query += `'${ids[i]}'`;
-            if (i+1 != ids.length) {
-                query += `, `; 
+            if (i + 1 != ids.length) {
+                query += `, `;
             }
         }
         query += `)`;
@@ -139,16 +139,16 @@ router.post("/deleteUser", async (req, res) => {
 
         await connection.commit();
         return res.status(200).json(result);
-    }catch(err) {
+    } catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
-    }finally {
+    } finally {
         connection.release();
     }
 })
 
-router.post("/register", async(req, res) => {
-    const {account, bank_index, birth, grade, name, password, phone, user_id, work_type_index, department_index} = req.body;
+router.post("/register", async (req, res) => {
+    const { account, bank_index, birth, grade, name, password, phone, user_id, work_type_index, department_index } = req.body;
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -157,28 +157,25 @@ router.post("/register", async(req, res) => {
 
         await connection.commit();
         return res.json(result);
-    }catch(err) {
+    } catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
-    }finally {
+    } finally {
         connection.release();
     }
-    
+
 });
 
-router.post("/register/response/admit", async(req, res) => {
+router.post("/register/response/admit", async (req, res) => {
     user_ids = req.body;
     let query = ``;
-    if (user_ids.length == 1) {
-        query = `Update User u set registration_state = '${status.approval}' Where user_id = '${user_ids[0]}'`;
+
+    query = `UPDATE User u JOIN (SELECT '${user_ids[0]}' as id, '${status.approval}' as state `;
+    for (let i = 1; i < user_ids.length; i++) {
+        query += (`UNION ALL SELECT '${user_ids[i]}', '${status.approval}'`)
     }
-    else if (user_ids.length > 1) {
-        query = `UPDATE User u JOIN (SELECT '${user_ids[0]}' as id, '${status.approval}' as state `;
-        for (let i = 1; i < user_ids.length; i++) {
-            query += (`UNION ALL SELECT '${user_ids[i]}', '${status.approval}'`)
-        }
-        query += (`) vals ON u.user_id = vals.id SET registration_state = state`)
-    }
+    query += (`) vals ON u.user_id = vals.id SET registration_state = state`)
+
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -187,28 +184,24 @@ router.post("/register/response/admit", async(req, res) => {
 
         await connection.commit();
         return res.status(200).json(result);
-    }catch(err) {
+    } catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
     } finally {
         connection.release();
     }
-    
+
 })
 
-router.post("/register/response/refuse", async(req, res) => {
+router.post("/register/response/refuse", async (req, res) => {
     user_ids = req.body;
     let query = ``;
-    if (user_ids.length == 1) {
-        query = `Update User u set registration_state = '${status.refuse}' Where user_id = '${user_ids[0]}'`;
+
+    query = `UPDATE User u JOIN (SELECT '${user_ids[0]}' as id, '${status.refuse}' as state `;
+    for (let i = 1; i < user_ids.length; i++) {
+        query += (`UNION ALL SELECT '${user_ids[i]}', '${status.refuse}'`)
     }
-    else if (user_ids.length > 1) {
-        query = `UPDATE User u JOIN (SELECT '${user_ids[0]}' as id, '${status.refuse}' as state `;
-        for (let i = 1; i < user_ids.length; i++) {
-            query += (`UNION ALL SELECT '${user_ids[i]}', '${status.refuse}'`)
-        }
-        query += (`) vals ON u.user_id = vals.id SET registration_state = state`)
-    }
+    query += (`) vals ON u.user_id = vals.id SET registration_state = state`)
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -217,17 +210,17 @@ router.post("/register/response/refuse", async(req, res) => {
 
         await connection.commit();
         return res.json(result);
-    }catch(err) {
+    } catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
     } finally {
         connection.release();
     }
-    
+
 })
 
-router.post("/login", async(req, res) => {
-    const {user_id, password} = req.body;
+router.post("/login", async (req, res) => {
+    const { user_id, password } = req.body;
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -235,20 +228,20 @@ router.post("/login", async(req, res) => {
         const [result] = await connection.query(`Select exists (select user_index from User where user_id = '${user_id}' and password = md5('${password}')) as exist`);
 
         await connection.commit();
-        
+
         return result[0].exist == 1 ? res.json(true) : res.json(false);
-    }catch(err) {
+    } catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
-    }finally {
+    } finally {
         connection.release();
     }
-    
+
 });
 
 
-router.post("/update", async(req, res) => {
-    const {user_id, password, name, grade, phone, account, birth, work_type_index, bank_index, department_index} = req.body;
+router.post("/update", async (req, res) => {
+    const { user_id, password, name, grade, phone, account, birth, work_type_index, bank_index, department_index } = req.body;
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -267,17 +260,17 @@ router.post("/update", async(req, res) => {
 
         await connection.commit();
         return res.json(result);
-    }catch(err) {
+    } catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
-    }finally {
+    } finally {
         connection.release();
     }
 
-    
+
 });
 
-router.get("/commute/:user_id", async(req, res) => {
+router.get("/commute/:user_id", async (req, res) => {
     const user_id = req.params.user_id;
     const connection = await pool.getConnection();
     try {
@@ -287,10 +280,10 @@ router.get("/commute/:user_id", async(req, res) => {
 
         await connection.commit();
         return res.status(200).json(result);
-    }catch(err) {
+    } catch (err) {
         await connection.rollback();
         return res.status(400).json(err);
-    }finally {
+    } finally {
         connection.release();
     }
 })
