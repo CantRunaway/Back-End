@@ -128,12 +128,12 @@ router.post("/register/response/admit", async(req, res) => {
     user_ids = req.body;
     let query = ``;
     if (user_ids.length == 1) {
-        query = `Update User u set registration_state = '${status.approval}' Where user_id = '${user_ids[0].user_id}'`;
+        query = `Update User u set registration_state = '${status.approval}' Where user_id = '${user_ids[0]}'`;
     }
     else if (user_ids.length > 1) {
-        query = `UPDATE User u JOIN (SELECT '${user_ids[0].user_id}' as id, '${status.approval}' as state `;
+        query = `UPDATE User u JOIN (SELECT '${user_ids[0]}' as id, '${status.approval}' as state `;
         for (let i = 1; i < user_ids.length; i++) {
-            query += (`UNION ALL SELECT '${user_ids[i].user_id}', '${status.approval}'`)
+            query += (`UNION ALL SELECT '${user_ids[i]}', '${status.approval}'`)
         }
         query += (`) vals ON u.user_id = vals.id SET registration_state = state`)
     }
@@ -158,12 +158,12 @@ router.post("/register/response/refuse", async(req, res) => {
     user_ids = req.body;
     let query = ``;
     if (user_ids.length == 1) {
-        query = `Update User u set registration_state = '${status.refuse}' Where user_id = '${user_ids[0].user_id}'`;
+        query = `Update User u set registration_state = '${status.refuse}' Where user_id = '${user_ids[0]}'`;
     }
     else if (user_ids.length > 1) {
-        query = `UPDATE User u JOIN (SELECT '${user_ids[0].user_id}' as id, '${status.refuse}' as state `;
+        query = `UPDATE User u JOIN (SELECT '${user_ids[0]}' as id, '${status.refuse}' as state `;
         for (let i = 1; i < user_ids.length; i++) {
-            query += (`UNION ALL SELECT '${user_ids[i].user_id}', '${status.refuse}'`)
+            query += (`UNION ALL SELECT '${user_ids[i]}', '${status.refuse}'`)
         }
         query += (`) vals ON u.user_id = vals.id SET registration_state = state`)
     }
