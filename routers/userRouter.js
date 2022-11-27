@@ -124,13 +124,32 @@ router.post("/register", async(req, res) => {
     
 });
 
-router.post("/register/response", async(req, res) => {
-    const {status, user_id} = req.body;
+router.post("/register/response/admit", async(req, res) => {
+    const {user_id} = req.body;
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
 
-        const result = await connection.query(`Update User set registration_state = '${status}' Where user_id = '${user_id}'`);
+        const result = await connection.query(`Update User set registration_state = '${status.approval}' Where user_id = '${user_id}'`);
+
+        await connection.commit();
+        return res.json(result);
+    }catch(err) {
+        await connection.rollback();
+        return res.status(400).json(err);
+    } finally {
+        connection.release();
+    }
+    
+})
+
+router.post("/register/response/refuse", async(req, res) => {
+    const {user_id} = req.body;
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const result = await connection.query(`Update User set registration_state = '${status.refuse}' Where user_id = '${user_id}'`);
 
         await connection.commit();
         return res.json(result);
