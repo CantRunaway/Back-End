@@ -7,7 +7,7 @@ router.get("/", async(req, res) => {
     try {
         await connection.beginTransaction();
 
-        const [result] = await connection.query(`select wo.work_type_name, w.change_date, w.hour_wage from wage w
+        const [result] = await connection.query(`select wo.work_type_name, date_format(w.change_date, '%Y-%m-%d %H:%i:%s') as change_date, w.hour_wage from wage w
         join work_type wo
         where w.work_type_index = wo.work_type_index`);
 

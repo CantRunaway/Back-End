@@ -28,6 +28,29 @@ router.get("/userList", async (req, res) => {
     }
 });
 
+router.get("/userList/:user_id", async (req, res) => {
+    const user_id = req.params.user_id;
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [result] = await connection.query(`Select user_id, name, grade, convert(aes_decrypt(unhex(phone), '${encryptionKey}') using utf8) as 'phone', convert(aes_decrypt(unhex(account), '${encryptionKey}') using utf8) as 'account', date_format(birth, '%Y-%m-%d') as birth, wt.work_type_name, b.bank_name , d.department_name as major from User u
+        Join work_type wt, bank b, department d
+        Where u.work_type_index = wt.work_type_index
+        And u.bank_index = b.bank_index
+        And u.user_type = '${userType.worker}'
+        And u.department_index = d.department_index
+        And u.user_id = '${user_id}'
+        `);
+        await connection.commit();
+        return res.json(result);
+    }catch(err) {
+        await connection.rollback();
+        return res.status(400).json(err);
+    }finally {
+        connection.release();
+    }
+});
+
 router.get("/workList", async(req, res) => {
     const connection = await pool.getConnection();
     try {
@@ -83,26 +106,6 @@ router.get("/userList/:name", async (req, res) => {
     }finally {
         connection.release();
     }
-});
-
-
-router.get("/deleteUser/:user_id", async (req, res) => {
-    const user_id = req.params.user_id;
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
-
-        const result = await connection.query(`Delete From User Where user_id = '${user_id}'`);
-
-        await connection.commit();
-        return res.json(result);
-    }catch(err) {
-        await connection.rollback();
-        return res.status(400).json(err);
-    }finally {
-        connection.release();
-    }
-    
 });
 
 router.post("/deleteUser", async (req, res) => {
