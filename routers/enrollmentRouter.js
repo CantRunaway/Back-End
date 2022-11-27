@@ -61,12 +61,12 @@ router.get("/:user_id", async(req, res) => {
         await connection.beginTransaction();
 
 
-        const [result] = await connection.query(`select en.enrollment_day, date_format(s.start_time, '%H:%i') as start_time from enrollment en
+        const [result] = await connection.query(`select en.enrollment_day as day, date_format(s.start_time, '%H:%i') as time from enrollment en
         Join schedule s, work_type w, user u
         where en.user_index = u.user_index
         and en.Schedule_index = s.schedule_index
         and u.work_type_index = w.work_type_index
-        and u.user_id = '${user_id}' order by start_time;`);
+        and u.user_id = '${user_id}' order by start_time`);
         
         await connection.commit();
         return res.status(200).json(result);
