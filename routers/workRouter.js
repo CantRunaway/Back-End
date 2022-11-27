@@ -55,6 +55,26 @@ router.get("/", async(req, res) => {
     }
 })
 
+router.get("/:user_id", async(req, res) => {
+    const user_id = req.params.user_id;
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [result] = await connection.query(`select wo.work_index, u.name, u.user_id, s.start_time, s.end_time, w.work_type_name from work wo
+        Join schedule s, work_type w, user u
+        where wo.user_index = u.user_index
+        and wo.Schedule_index = s.schedule_index
+        and u.work_type_index = w.work_type_index
+        and u.user_id = '${user_id}'`);
+
+        return res.status(200).json(result);
+    }catch(err) {
+        return res.status(400).json(err);
+    }finally{
+        connection.release();
+    }
+})
+
 router.get("/worker", async(req, res) => {
     const connection = await pool.getConnection();
     try {
