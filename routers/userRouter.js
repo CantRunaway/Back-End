@@ -5,6 +5,7 @@ const key = require("../config/encryptionKey");
 const status = require('../config/applyStatus');
 const userType = require('../config/userTypeStatus');
 const commuteType = require('../config/commuteTypeStatus');
+const { query } = require('../config/connectionPool');
 const encryptionKey = key.key;
 
 router.get("/userList", async (req, res) => {
@@ -125,15 +126,26 @@ router.post("/register", async(req, res) => {
 });
 
 router.post("/register/response/admit", async(req, res) => {
-    const {user_id} = req.body;
+    user_ids = req.body;
+    let query = ``;
+    if (user_ids.length == 1) {
+        query = `Update User u set registration_state = '${status.approval}' Where user_id = '${user_ids[0].user_id}'`;
+    }
+    else if (user_ids.length > 1) {
+        query = `UPDATE User u JOIN (SELECT '${user_ids[0].user_id}' as id, '${status.approval}' as state `;
+        for (let i = 1; i < user_ids.length; i++) {
+            query += (`UNION ALL SELECT '${user_ids[i].user_id}', '${status.approval}'`)
+        }
+        query += (`) vals ON u.user_id = vals.id SET registration_state = state`)
+    }
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
 
-        const result = await connection.query(`Update User set registration_state = '${status.approval}' Where user_id = '${user_id}'`);
+        const result = await connection.query(query);
 
         await connection.commit();
-        return res.json(result);
+        return res.status(200).json(result);
     }catch(err) {
         await connection.rollback();
         return res.status(400).json(err);
@@ -144,12 +156,23 @@ router.post("/register/response/admit", async(req, res) => {
 })
 
 router.post("/register/response/refuse", async(req, res) => {
-    const {user_id} = req.body;
+    user_ids = req.body;
+    let query = ``;
+    if (user_ids.length == 1) {
+        query = `Update User u set registration_state = '${status.refuse}' Where user_id = '${user_ids[0].user_id}'`;
+    }
+    else if (user_ids.length > 1) {
+        query = `UPDATE User u JOIN (SELECT '${user_ids[0].user_id}' as id, '${status.refuse}' as state `;
+        for (let i = 1; i < user_ids.length; i++) {
+            query += (`UNION ALL SELECT '${user_ids[i].user_id}', '${status.refuse}'`)
+        }
+        query += (`) vals ON u.user_id = vals.id SET registration_state = state`)
+    }
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
 
-        const result = await connection.query(`Update User set registration_state = '${status.refuse}' Where user_id = '${user_id}'`);
+        const result = await connection.query(query);
 
         await connection.commit();
         return res.json(result);
