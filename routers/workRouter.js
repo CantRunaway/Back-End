@@ -60,7 +60,7 @@ router.get("/:user_id", async(req, res) => {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
-        const [result] = await connection.query(`select wo.work_day as day, date_format(s.start_time, '%H:%i') as time from work wo
+        const [result] = await connection.query(`select 'work' as type, concat(date_format(s.start_time, '%H:%i'), wo.work_day) as id, wo.work_day as day, date_format(s.start_time, '%H:%i') as time from work wo
         Join schedule s, work_type w, user u
         where wo.user_index = u.user_index
         and wo.Schedule_index = s.schedule_index

@@ -5,7 +5,6 @@ const key = require("../config/encryptionKey");
 const status = require('../config/applyStatus');
 const userType = require('../config/userTypeStatus');
 const commuteType = require('../config/commuteTypeStatus');
-const { query } = require('../config/connectionPool');
 const encryptionKey = key.key;
 
 router.get("/userList", async (req, res) => {
