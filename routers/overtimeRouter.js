@@ -63,4 +63,24 @@ router.get("/", async(req, res) => {
     }
 })//오늘 임시 근로자 추출
 
+router.get("/:user_id", async(req, res) => {
+    const user_id = req.params.user_id;
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [result] = await connection.query(`select o.overtime_index, u.name, r.work_start, r.work_end, wt.work_type_name, r.recruit_state, '초과 근무 요청' as type from overtime o
+        join user u, recruit r, work_type wt
+        where o.user_index = u.user_index
+        and u.user_id = '${user_id}'
+        and o.recruit_index = r.recruit_index
+        and r.work_type_index = wt.work_type_index`);
+
+        return res.status(200).json(result);
+    }catch (err) {
+        return res.status(400).json(err);
+    }finally {
+        connection.release();
+    }
+})
+
 module.exports = router;

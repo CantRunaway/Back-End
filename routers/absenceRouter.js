@@ -24,6 +24,26 @@ router.post("/", async (req, res) => {
 
 });
 
+router.get("/:user_id", async(req, res) => {
+    const user_id = req.params.user_id;
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const [result] = await connection.query(`select a.absence_index, u.name, a.absence_start, a.absence_end, wt.work_type_name, a.absence_state, '결근 요청' as type from absence a
+        join user u, work_type wt
+        where u.user_id = '${user_id}'
+        and a.user_index = u.user_index
+        and wt.work_type_index = u.work_type_index`);
+
+        return res.status(200).json(result);
+    }catch(err) {
+        return res.status(400).json(err);
+    }finally{
+        connection.release();
+    }
+})
+
 router.post("/response", async (req, res) => {
     const { absence_state, absence_index } = req.body;
     const connection = await pool.getConnection();
