@@ -105,6 +105,39 @@ router.get("/deleteUser/:user_id", async (req, res) => {
     
 });
 
+router.post("/deleteUser", async (req, res) => {
+    const ids = req.body;
+    let query = ``;
+
+    if (ids.length == 1) {
+        query = `Delete From User Where user_id = '${ids[0]}'`
+    }
+    else if (ids.length > 1) {
+        query = `Delete From User Where user_id in (`;
+        for (let i = 0; i < ids.length; i++) {
+            query += `'${ids[i]}'`;
+            if (i+1 != ids.length) {
+                query += `, `; 
+            }
+        }
+        query += `)`;
+    }
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const result = await connection.query(query);
+
+        await connection.commit();
+        return res.status(200).json(result);
+    }catch(err) {
+        await connection.rollback();
+        return res.status(400).json(err);
+    }finally {
+        connection.release();
+    }
+})
+
 router.post("/register", async(req, res) => {
     const {account, bank_index, birth, grade, name, password, phone, user_id, work_type_index, department_index} = req.body;
     const connection = await pool.getConnection();
