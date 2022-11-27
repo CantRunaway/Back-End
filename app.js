@@ -4,6 +4,7 @@ const cors = require("cors");
 const LocalPort = require("./config/LocalPort");
 const port = LocalPort.port;
 const hostname = LocalPort.host;
+
 const userRouter = require("./routers/userRouter");
 const bankRouter = require("./routers/bankRouter");
 const departmentRouter = require("./routers/departmentRouter");
