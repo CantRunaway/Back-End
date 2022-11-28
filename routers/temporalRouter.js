@@ -17,4 +17,36 @@ router.get("/", async(req, res) => {
     }
 })
 
+router.post("/class", async(req, res) => {
+    const {edit_start, edit_end} = req.body;
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const result = await connection.query(`UPDATE edit_schedule_temporal SET edit_start = '${edit_start}', edit_end = '${edit_end}' where edit_schedule_temporal_index = 1`)
+        await connection.commit();
+        return res.status(200).json(result);
+    }catch(err) {
+        await connection.rollback();
+        return res.status(400).json(err);
+    }finally{
+        connection.release();
+    }
+})
+
+router.post("/work", async(req, res) => {
+    const {edit_start, edit_end} = req.body;
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const result = await connection.query(`UPDATE edit_schedule_temporal SET edit_start = '${edit_start}', edit_end = '${edit_end}' where edit_schedule_temporal_index = 2`)
+        await connection.commit();
+        return res.status(200).json(result);
+    }catch(err) {
+        await connection.rollback();
+        return res.status(400).json(err);
+    }finally{
+        connection.release();
+    }
+})
+
 module.exports = router;
