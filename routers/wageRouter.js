@@ -7,7 +7,7 @@ router.get("/", async(req, res) => {
     try {
         await connection.beginTransaction();
 
-        const [result] = await connection.query(`select wo.work_type_index, wo.work_type_name, date_format(w.change_date, '%Y-%m-%d') as change_date, w.hour_wage from wage w
+        const [result] = await connection.query(`select w.wage_index, wo.work_type_index, wo.work_type_name, date_format(w.change_date, '%Y-%m-%d') as change_date, w.hour_wage from wage w
         join work_type wo
         where w.work_type_index = wo.work_type_index`);
 
@@ -38,11 +38,27 @@ router.post("/", async(req, res) => {
 })
 
 router.delete("/", async(req, res) => {
+    const body = req.body;
+    let query = ``;
+
+    if(body.length == 1) {
+        query = `Delete From Wage Where wage_index = '${body[0]}'`;
+    }
+    else if (body.length > 1) {
+        query = `Delete From Wage Where wage_index in (`;
+        for (let i = 0; i < body.length; i++) {
+            query += `'${body[i]}'`;
+            if (i+1 != body.length) {
+                query += `,`;
+            }
+        }
+        query += `)`;
+    }
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
 
-        const result = await connection.query(``)
+        const result = await connection.query(query);
 
         await connection.commit();
         return res.status(200).json(result);
