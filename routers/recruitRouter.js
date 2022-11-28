@@ -23,20 +23,21 @@ router.get("/", async(req, res) => {
 })
 
 router.post("/", async(req, res) => {
-    const {work_type_index, work_start, work_end, recruit_worker, applyment_worker} = req.body;
-    const connecttion = await pool.getConnection();
+    console.log(req.body);
+    const {work_type_index, work_start, work_end, recruit_worker} = req.body;
+    const connection = await pool.getConnection();
     try {
-        await connecttion.beginTransaction();
+        await connection.beginTransaction();
 
-        const result = await connection.query(`Insert Into Recruit(work_type_index, recruit_state, work_start, work_end, recruit_worker, applyment_worker) values ('${work_type_index}', '${status.waiting}','${work_start}', '${work_end}', '${recruit_worker}', '${applyment_worker}')`);
-
-        await connecttion.commit();
-        return res.json(result);
+        const result = await connection.query(`Insert Into Recruit(work_type_index, work_start, work_end, recruit_worker) values ('${work_type_index}','${work_start}', '${work_end}', '${recruit_worker}')`);
+        console.log(result.query);
+        await connection.commit();
+        return res.status(200).json(result);
     }catch(err) {
-        await connecttion.rollback();
+        await connection.rollback();
         return res.status(400).json(err);
     }finally {
-        connecttion.release();
+        connection.release();
     }
     
 });
