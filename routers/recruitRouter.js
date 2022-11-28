@@ -41,10 +41,10 @@ router.post("/", async(req, res) => {
     
 });
 
-router.delete("/", async(req, res) => {
+router.post("/delete", async(req, res) => {
     const ids = req.body;
     let query = ``;
-
+    console.log(ids);
     if (ids.length == 1) {
         query = `Delete From Recruit Where recruit_index = '${ids[0]}'`
     }
@@ -58,6 +58,7 @@ router.delete("/", async(req, res) => {
         }
         query += `)`;
     }
+    console.log(query);
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();

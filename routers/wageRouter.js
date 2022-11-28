@@ -37,7 +37,7 @@ router.post("/", async(req, res) => {
     }
 })
 
-router.delete("/", async(req, res) => {
+router.post("/delete", async(req, res) => {
     const body = req.body;
     let query = ``;
 
