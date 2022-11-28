@@ -41,12 +41,28 @@ router.post("/", async(req, res) => {
     
 });
 
-router.post("/delete", async(req, res) => {
+router.delete("/", async(req, res) => {
+    const ids = req.body;
+    let query = ``;
+
+    if (ids.length == 1) {
+        query = `Delete From Recruit Where recruit_index = '${ids[0]}'`
+    }
+    else if (ids.length > 1) {
+        query = `Delete From Recruit Where recruit_index in (`;
+        for (let i = 0; i < ids.length; i++) {
+            query += `'${ids[i]}'`;
+            if (i+1 != ids.length) {
+                query += `, `;
+            }
+        }
+        query += `)`;
+    }
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
 
-        const result = await connection.query(`Delete from Recruit Where recruit_index = '${recruit_index}'`);
+        const result = await connection.query(query);
 
         await connection.commit();
         return res.json(result);
