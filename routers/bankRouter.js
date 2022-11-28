@@ -12,8 +12,9 @@ router.get("/", async (req, res) => {
         await connection.commit();
         return res.json(result);
     } catch(err) {
-        return res.status(400).json(err);
         await connection.rollback();
+        return res.status(400).json(err);
+        
     }
     finally {
         connection.release();

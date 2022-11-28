@@ -30,7 +30,7 @@ router.get("/:user_id", async(req, res) => {
     try {
         await connection.beginTransaction();
 
-        const [result] = await connection.query(`select a.absence_index, u.name, a.absence_start, a.absence_end, wt.work_type_name, a.absence_state, '결근 요청' as type from absence a
+        const [result] = await connection.query(`select a.absence_index, u.name, date_format(a.absence_start, '%Y-%m-%d %H:%i:%s') as work_start, date_format(a.absence_end, '%Y-%m-%d %H:%i:%s') as work_end, wt.work_type_name, a.absence_state, '결근' as type from absence a
         join user u, work_type wt
         where u.user_id = '${user_id}'
         and a.user_index = u.user_index
