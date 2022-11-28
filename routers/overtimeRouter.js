@@ -68,7 +68,7 @@ router.get("/:user_id", async(req, res) => {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
-        const [result] = await connection.query(`select o.overtime_index, u.name, date_format(r.work_start, '%Y-%m-%d %H:%i:%s') as work_start, date_format(r.work_end, '%Y-%m-%d %H:%i:%s') as work_end, wt.work_type_name, r.recruit_state, '추가근로' as type from overtime o
+        const [result] = await connection.query(`select o.overtime_index, u.name, date_format(r.work_start, '%Y-%m-%d %H:%i') as work_start, date_format(r.work_end, '%Y-%m-%d %H:%i') as work_end, wt.work_type_name, r.recruit_state, '추가근로' as type from overtime o
         join user u, recruit r, work_type wt
         where o.user_index = u.user_index
         and u.user_id = '${user_id}'
