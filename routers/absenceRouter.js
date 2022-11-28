@@ -3,12 +3,14 @@ const router = express.Router();
 const pool = require("../config/connectionPool");
 const status = require('../config/applyStatus');
 
-router.post("/", async (req, res) => {
-    const { absence_start, absence_end, user_index } = req.body;
+router.post("/:user_id", async (req, res) => {
+    const user_id = req.params.user_id;
+    const { absence_start, absence_end} = req.body;
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
-
+        const [index] = await connection.query(`select user_index from user where user_id = '${user_id}'`);
+        const user_index = index[0].user_index;
         const result = await connection.query(`Insert Into Absence(absence_state, absence_start, absence_end, user_index) values ('${status.waiting}', '${absence_start}', '${absence_end}', '${user_index}')`)
 
         await connection.commit();
