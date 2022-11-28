@@ -239,6 +239,19 @@ router.post("/login", async (req, res) => {
 
 });
 
+router.get("/:user_id", async(req, res) => {
+    const user_id = req.params.user_id;
+    const connection = await pool.getConnection();
+    try {
+        const [result] = await connection.query(`select user_index from user where user_id = '${user_id}' limit 1`);
+
+        return res.status(200).json(result);
+    }catch(err) {
+        return res.status(400).json(err);
+    }finally {
+        connection.release();
+    }
+})
 
 router.post("/update", async (req, res) => {
     const { user_id, password, name, grade, phone, account, birth, work_type_index, bank_index, department_index } = req.body;

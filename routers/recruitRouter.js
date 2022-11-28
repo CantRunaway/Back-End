@@ -7,7 +7,7 @@ router.get("/", async(req, res) => {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
-    const [result] = await connection.query(`SELECT r.recruit_index, wt.work_type_name, r.recruit_state, r.work_start, r.work_end, r.recruit_worker, r.applyment_worker FROM Recruit r
+    const [result] = await connection.query(`SELECT r.recruit_index, wt.work_type_name, r.recruit_state, date_format(r.work_start, '%Y-%m-%d %H:%i:%s') as work_start , date_format(r.work_end, '%Y-%m-%d %H:%i:%s') as work_end, r.recruit_worker, r.applyment_worker FROM Recruit r
     LEFT JOIN work_type wt
      ON r.work_type_index = wt.work_type_index
      WHERE r.recruit_state = '${status.waiting}'`);

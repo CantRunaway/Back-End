@@ -83,4 +83,32 @@ router.get("/:user_id", async(req, res) => {
     }
 })
 
+router.post("/request/:user_id", async(req, res) => {
+    const ids = req.body;
+    const user_id = req.params.user_id;
+    let arr = [];
+    
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const [result] = await connection.query(`select user_index from user where user_id = '${user_id}'`);
+        for (let i = 0; i < ids.length; i++) {
+            arr.push([`${status.waiting}`, `${result[0].user_index}`, `${ids[i].recruit_index}`]);
+            console.log(arr[i]);
+        }
+
+        const results = await connection.query(`insert into overtime (cover_state, user_index, recruit_index) values ?`, [arr]);
+
+
+        await connection.commit();
+        return res.status(200).json(results);
+    }catch(err) {
+        await connection.rollback();
+        return res.status(400).json(err);
+    }finally{
+        connection.release();
+    }
+})
+
 module.exports = router;
