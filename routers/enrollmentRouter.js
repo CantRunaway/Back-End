@@ -60,7 +60,6 @@ router.get("/:user_id", async(req, res) => {
     try {
         await connection.beginTransaction();
 
-
         const [result] = await connection.query(`select 'class' as type, concat(date_format(s.start_time, '%H:%i'), en.enrollment_day) as id, en.enrollment_day as day, date_format(s.start_time, '%H:%i') as time from enrollment en
         Join schedule s, work_type w, user u
         where en.user_index = u.user_index
