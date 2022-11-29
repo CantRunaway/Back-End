@@ -4,6 +4,7 @@ const cors = require("cors");
 const LocalPort = require("./config/LocalPort");
 const port = LocalPort.port;
 const hostname = LocalPort.host;
+const path = require("path");
 
 const userRouter = require("./routers/userRouter");
 const bankRouter = require("./routers/bankRouter");
@@ -44,6 +45,11 @@ const server = async () => {
         app.listen(port, hostname, () => {
             console.log("Connect");
         });
+
+        app.use(express.static(path.join(__dirname, "Front-End/build")));
+        app.get("*", (req, res) => {
+            res.sendFile(path.join(__dirname, "Front-End/build/index.html"));
+        })
     }catch(error) {
         console.log(error);
         console.log("DB connect FAIL");

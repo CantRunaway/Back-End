@@ -22,6 +22,59 @@ router.post("/", async(req, res) => {
     }
 });
 
+router.post("/admit", async (req, res) => {
+    ids = req.body;
+    let query = ``;
+
+    query = `update overtime o join (select '${ids[0]}' as id, '${status.approval}' as state `;
+    for (let i = 1; i < ids.length; i++) {
+        query += (`union all select '${ids[i]}', '${status.approval}'`)
+    }
+    query += (`) vals on o.overtime_index = vals.id set cover_state = state`)
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const result = await connection.query(query);
+
+        await connection.commit();
+        return res.status(200).json(result);
+    } catch (err) {
+        await connection.rollback();
+        return res.status(400).json(err);
+    } finally {
+        connection.release();
+    }
+
+});
+
+router.post("/refuse", async (req, res) => {
+    ids = req.body;
+    let query = ``;
+
+    query = `update overtime o join (select '${ids[0]}' as id, '${status.refuse}' as state `;
+    for (let i = 1; i < ids.length; i++) {
+        query += (`union all select '${ids[i]}', '${status.refuse}'`)
+    }
+    query += (`) vals on o.overtime_index = vals.id set cover_state = state`)
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const result = await connection.query(query);
+
+        await connection.commit();
+        return res.status(200).json(result);
+    } catch (err) {
+        await connection.rollback();
+        return res.status(400).json(err);
+    } finally {
+        connection.release();
+    }
+
+})
 
 
 router.post("/response", async(req, res) => {
