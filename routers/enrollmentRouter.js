@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require("../config/connectionPool");
+const restStatus = require('../config/RestStatus');
 
 const getScheduleIndex = (time) => {
     const times = time.split(":");
@@ -25,40 +26,41 @@ router.post("/", async(req, res) => {
         const result = await connection.query(`Insert into enrollment(enrollment_day, user_index, Schedule_index) values ?`, [resultList]);
 
         await connection.commit();
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     }catch(err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }
-});
+});//완성
 
 router.get("/", async(req, res) => {
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        
 
-        const [result] = await connection.query(`SELECT us.name, en.enrollment_day, sc.start_time, sc.end_time FROM Enrollment en
-            JOIN User us, Schedule sc
-            WHERE en.user_index = us.user_index
-            AND en.schedule_index = sc.schedule_index`);
+        const [result] = await connection.query(`SELECT us.name, en.enrollment_day, min(sc.start_time) as start_time, max(sc.end_time) as end_time FROM Enrollment en
+        JOIN User us, Schedule sc
+        WHERE en.user_index = us.user_index
+        AND en.schedule_index = sc.schedule_index
+        group by us.user_id`);
 
-        await connection.commit();
-        return res.status(200).json(result);
+        
+        return res.status(restStatus.success).json(result);
     }catch(err) {
-        await connection.rollback();
-        return res.status(400).json(err);
+        
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }
-});
+});//완성
 
 router.get("/:user_id", async(req, res) => {
     const user_id = req.params.user_id;
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        
 
         const [result] = await connection.query(`select 'class' as type, concat(date_format(s.start_time, '%H:%i'), en.enrollment_day) as id, en.enrollment_day as day, date_format(s.start_time, '%H:%i') as time from enrollment en
         Join schedule s, work_type w, user u
@@ -67,15 +69,15 @@ router.get("/:user_id", async(req, res) => {
         and u.work_type_index = w.work_type_index
         and u.user_id = '${user_id}' order by start_time`);
         
-        await connection.commit();
-        return res.status(200).json(result);
+        
+        return res.status(restStatus.success).json(result);
     }catch(err) {
-        await connection.rollback();
-        return res.status(400).json(err);
+        
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }
-})
+});//완성
 
 router.post("/postEnroll/:user_id", async(req, res) => {
     const user_id = req.params.user_id;
@@ -95,13 +97,13 @@ router.post("/postEnroll/:user_id", async(req, res) => {
 
 
         await connection.commit();
-        return res.status(200).json(results);
+        return res.status(restStatus.success).json(results);
     }catch(err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }
-})
+});//완성
 
 module.exports = router;

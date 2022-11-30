@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require("../config/connectionPool");
 const status = require('../config/applyStatus');
 const recruitStatus = require('../config/recruitStatus');
+const restStatus = require('../config/RestStatus');
 
 router.post("/", async(req, res) => {
     const {user_index, recruit_index} = req.body;
@@ -13,10 +14,10 @@ router.post("/", async(req, res) => {
         const result = await connection.query(`Insert Into Overtime(cover_state, user_index, recruit_index) values ('${status.waiting}', '${user_index}', '${recruit_index}')`);
 
         await connection.commit();
-        return res.json(result);
+        return res.status(restStatus.success).json(result);
     }catch(err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }
@@ -39,10 +40,10 @@ router.post("/admit", async (req, res) => {
         const result = await connection.query(query);
 
         await connection.commit();
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     } catch (err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
@@ -66,10 +67,10 @@ router.post("/refuse", async (req, res) => {
         const result = await connection.query(query);
 
         await connection.commit();
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     } catch (err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
@@ -86,10 +87,10 @@ router.post("/response", async(req, res) => {
         const result = await connection.query(`Update Overtime Set cover_state = '${cover_state}' WHERE overtime_index = '${overtime_index}'`);
 
         await connection.commit();
-        return res.json(result);
+        return res.status(restStatus.success).json(result);
     }catch(err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }
@@ -101,16 +102,17 @@ router.post("/response", async(req, res) => {
 router.get("/", async(req, res) => {
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
-        const [result] = await connection.query(`select o.overtime_index, u.name, u.user_id, date_format(r.work_start, '%Y-%m-%d %H:%i:%s') as work_start, date_format(r.work_end, '%Y-%m-%d %H:%i:%s') as work_end , w.work_type_name from domang.overtime o
-        join domang.User u, domang.recruit r, domang.work_type w
+        
+        const [result] = await connection.query(`select o.overtime_index, u.name, u.user_id, date_format(r.work_start, '%Y-%m-%d %H:%i:%s') as work_start, date_format(r.work_end, '%Y-%m-%d %H:%i:%s') as work_end , w.work_type_name from overtime o
+        join User u, recruit r, work_type w
         where o.user_index = u.user_index
         and o.recruit_index = r.recruit_index
-        and date_format(r.work_start, '%Y-%m-%d') >= date_format(now(), '%Y-%m-%d') group by o.overtime_index`);
+        and r.work_end >= now()
+        group by overtime_index`);
 
-        return res.json(result);
+        return res.status(restStatus.success).json(result);
     }catch(err) {
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }
@@ -120,21 +122,22 @@ router.get("/:user_id", async(req, res) => {
     const user_id = req.params.user_id;
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
-        const [result] = await connection.query(`select o.overtime_index, u.name, date_format(r.work_start, '%Y-%m-%d %H:%i') as work_start, date_format(r.work_end, '%Y-%m-%d %H:%i') as work_end, wt.work_type_name, r.recruit_state, '추가근로' as type from overtime o
-        join user u, recruit r, work_type wt
-        where o.user_index = u.user_index
-        and u.user_id = '${user_id}'
-        and o.recruit_index = r.recruit_index
-        and r.work_type_index = wt.work_type_index`);
+        
+        const [result] = await connection.query(`select o.overtime_index, u.name, date_format(r.work_start, '%Y-%m-%d %H:%i') as work_start, date_format(r.work_end, '%Y-%m-%d %H:%i') as work_end, wt.work_type_name, 
+        (CASE WHEN r.recruit_state = 0 THEN "대기중" WHEN r.recruit_state = 1 THEN "승인" WHEN r.recruit_state = 2 THEN "거절" END) as recruit_state, '추가근로' as type from overtime o
+                join user u, recruit r, work_type wt
+                where o.user_index = u.user_index
+                and u.user_id = '${user_id}'
+                and o.recruit_index = r.recruit_index
+                and r.work_type_index = wt.work_type_index`);
 
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     }catch (err) {
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }
-})
+})//확인
 
 router.post("/request/:user_id", async(req, res) => {
     const ids = req.body;
@@ -155,10 +158,10 @@ router.post("/request/:user_id", async(req, res) => {
 
 
         await connection.commit();
-        return res.status(200).json(results);
+        return res.status(restStatus.success).json(results);
     }catch(err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally{
         connection.release();
     }

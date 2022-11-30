@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require("../config/connectionPool");
 const status = require('../config/applyStatus');
+const restStatus = require('../config/RestStatus');
 
 router.post("/:user_id", async (req, res) => {
     const user_id = req.params.user_id;
@@ -15,22 +16,21 @@ router.post("/:user_id", async (req, res) => {
 
         await connection.commit();
 
-        return res.json(result);
+        return res.status(restStatus.success).json(result);
     } catch (err) {
 
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
-
-});
+});//완성
 
 router.get("/:user_id", async(req, res) => {
     const user_id = req.params.user_id;
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        
 
         const [result] = await connection.query(`select a.absence_index, u.name, date_format(a.absence_start, '%Y-%m-%d %H:%i') as work_start, date_format(a.absence_end, '%Y-%m-%d %H:%i') as work_end, wt.work_type_name, a.absence_state, '결근' as type from absence a
         join user u, work_type wt
@@ -38,13 +38,13 @@ router.get("/:user_id", async(req, res) => {
         and a.user_index = u.user_index
         and wt.work_type_index = u.work_type_index`);
 
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     }catch(err) {
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally{
         connection.release();
     }
-})
+})//완성
 
 router.post("/response", async (req, res) => {
     const { absence_state, absence_index } = req.body;
@@ -56,15 +56,15 @@ router.post("/response", async (req, res) => {
 
         await connection.commit();
 
-        return res.json(result);
+        return res.status(restStatus.success).json(result);
     } catch (err) {
 
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
-});
+});//완성
 
 router.post("/admit", async (req, res) => {
     ids = req.body;
@@ -83,15 +83,15 @@ router.post("/admit", async (req, res) => {
         const result = await connection.query(query);
 
         await connection.commit();
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     } catch (err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
 
-})
+})//완성
 
 router.post("/refuse", async (req, res) => {
     ids = req.body;
@@ -110,32 +110,32 @@ router.post("/refuse", async (req, res) => {
         const result = await connection.query(query);
 
         await connection.commit();
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     } catch (err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
 
-})
+})//완성
 
 router.get("/", async (req, res) => {
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        
         const [result] = await connection.query(`select a.absence_index, u.name, u.user_id, date_format(a.absence_start, '%Y-%m-%d %H:%i:%s') as work_start, date_format(a.absence_end, '%Y-%m-%d %H:%i:%s') as work_end, w.work_type_name from absence a
         join user u, work_type w
         where a.user_index = u.user_index
         and u.work_type_index = w.work_type_index
-        and date_format(a.absence_start, '%Y-%m-%d') >= date_format(now(), '%Y-%m-%d')`);
+        and a.absence_end >= now()`);
 
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     } catch (err) {
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
-})//오늘 결근자 확인
+})//오늘 이후의 결근 자 확인
 
 module.exports = router;

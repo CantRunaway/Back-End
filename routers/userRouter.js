@@ -6,75 +6,80 @@ const status = require('../config/applyStatus');
 const userType = require('../config/userTypeStatus');
 const commuteType = require('../config/commuteTypeStatus');
 const encryptionKey = key.key;
+const restStatus = require('../config/RestStatus');
 
 router.get("/userList", async (req, res) => {
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        
         const [result] = await connection.query(`Select user_id, name, grade, convert(aes_decrypt(unhex(phone), '${encryptionKey}') using utf8) as 'phone', convert(aes_decrypt(unhex(account), '${encryptionKey}') using utf8) as 'account', date_format(birth, '%Y-%m-%d') as birth, wt.work_type_name, b.bank_name , d.department_name as major from User u
         Join work_type wt, bank b, department d
         Where u.work_type_index = wt.work_type_index
         And u.bank_index = b.bank_index
         And u.user_type = '${userType.worker}'
+        And u.registration_state = '${status.approval}'
         And u.department_index = d.department_index
         `);
-        await connection.commit();
-        return res.json(result);
+        
+        return res.status(restStatus.success).json(result);
     } catch (err) {
-        await connection.rollback();
-        return res.status(400).json(err);
+        
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
-});
+});//완료
 
 router.get("/userList/:user_id", async (req, res) => {
     const user_id = req.params.user_id;
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        
         const [result] = await connection.query(`Select user_id, name, grade, convert(aes_decrypt(unhex(phone), '${encryptionKey}') using utf8) as 'phone', convert(aes_decrypt(unhex(account), '${encryptionKey}') using utf8) as 'account', date_format(birth, '%Y-%m-%d') as birth, wt.work_type_name, b.bank_name , d.department_name as major from User u
         Join work_type wt, bank b, department d
         Where u.work_type_index = wt.work_type_index
         And u.bank_index = b.bank_index
         And u.user_type = '${userType.worker}'
         And u.department_index = d.department_index
+        And u.registration_state = '${status.approval}'
         And u.user_id = '${user_id}'
         `);
-        await connection.commit();
-        return res.json(result);
+        
+        return res.status(restStatus.success).json(result);
     } catch (err) {
-        await connection.rollback();
-        return res.status(400).json(err);
+        
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
-});
+});//완료
 
 router.get("/workList", async (req, res) => {
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        
         const [result] = await connection.query(`select u.user_id, u.name, w.work_type_name from User u
         Join work_type w
-        Where u.work_type_index = w.work_type_index`);
+        Where u.work_type_index = w.work_type_index
+        And u.registration_state = '${status.approval}'
+        Order by u.user_id`);
 
-        await connection.commit();
-        return res.json(result);
+        
+        return res.status(restStatus.success).json(result);
 
     }
     catch (err) {
-        await connection.rollback();
-        return res.status(400).json(err);
+        
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
-})
+});//완료
 
 router.get("/userLists/wating", async (req, res) => {
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        
 
         const [result] = await connection.query(`select user_index, user_id, name, grade, convert(aes_decrypt(unhex(phone), '${encryptionKey}') using utf8) as 'phone', date_format(birth, '%Y-%m-%d') as birth, wt.work_type_name, d.department_name as major from User u
         Join work_type wt,  department d
@@ -83,36 +88,36 @@ router.get("/userLists/wating", async (req, res) => {
         And u.registration_state = '${status.waiting}'`)
 
 
-        await connection.commit();
-        return res.status(200).json(result);
+        
+        return res.status(restStatus.success).json(result);
     } catch (err) {
-        await connection.rollback();
-        return res.status(400).json(err);
+        
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
-});
+});//완료
 
 
 router.get("/userList/:name", async (req, res) => {
     const name = req.params.name;
     try {
-        await connection.beginTransaction();
+        
         const [result] = await connection.query(`Select user_id, name, grade, convert(aes_decrypt(unhex(phone), '${encryptionKey}') using utf8) as 'phone', convert(aes_decrypt(unhex(account), '${encryptionKey}') using utf8) as 'account', date_format(birth, '%Y-%m-%d') as birth, wt.work_type_name, b.bank_name from User u
         Join work_type wt, bank b
          Where u.work_type_index = wt.work_type_index
          And u.bank_index = b.bank_index
          And u.user_type = '${userType.worker}'
          And u.name = '${name}'`);
-        await connection.commit();
-        return res.json(result);
+        
+        return res.status(restStatus.success).json(result);
     } catch (err) {
-        await connection.rollback();
-        return res.status(400).json(err);
+        
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
-});
+});//완료
 
 router.post("/deleteUser", async (req, res) => {
     const ids = req.body;
@@ -138,10 +143,10 @@ router.post("/deleteUser", async (req, res) => {
         const result = await connection.query(query);
 
         await connection.commit();
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     } catch (err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
@@ -156,10 +161,10 @@ router.post("/register", async (req, res) => {
         const result = await connection.query(`Insert Into User(user_id, password, user_type, name, grade, phone, account, birth, registration_state, work_type_index, bank_index, department_index, work_state) values ('${user_id}', md5('${password}'), '${userType.worker}','${name}','${grade}', hex(aes_encrypt('${phone}', '${encryptionKey}')),  hex(aes_encrypt('${account}', '${encryptionKey}')), '${birth}', '${status.waiting}', '${work_type_index}', '${bank_index}', '${department_index}', '${commuteType.leave_work}')`);
 
         await connection.commit();
-        return res.json(result);
+        return res.status(restStatus.success).json(result);
     } catch (err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
@@ -183,10 +188,10 @@ router.post("/register/response/admit", async (req, res) => {
         const result = await connection.query(query);
 
         await connection.commit();
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     } catch (err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
@@ -209,10 +214,10 @@ router.post("/register/response/refuse", async (req, res) => {
         const result = await connection.query(query);
 
         await connection.commit();
-        return res.json(result);
+        return res.status(restStatus.success).json(result);
     } catch (err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
@@ -223,16 +228,16 @@ router.post("/login", async (req, res) => {
     const { user_id, password } = req.body;
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        
 
         const [result] = await connection.query(`Select exists (select user_index from User where user_id = '${user_id}' and password = md5('${password}') and registration_state = 1) as exist`);
 
-        await connection.commit();
+        
 
-        return result[0].exist == 1 ? res.json(true) : res.json(false);
+        return result[0].exist == 1 ? res.status(restStatus.success).json(true) : res.status(restStatus.success).json(false);
     } catch (err) {
-        await connection.rollback();
-        return res.status(400).json(err);
+        
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
@@ -245,9 +250,9 @@ router.get("/:user_id", async(req, res) => {
     try {
         const [result] = await connection.query(`select user_index from user where user_id = '${user_id}' limit 1`);
 
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     }catch(err) {
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }
@@ -272,10 +277,10 @@ router.post("/update", async (req, res) => {
         Where user_id = '${user_id}'`);
 
         await connection.commit();
-        return res.json(result);
+        return res.status(restStatus.success).json(result);
     } catch (err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
@@ -287,18 +292,18 @@ router.get("/commute/:user_id", async (req, res) => {
     const user_id = req.params.user_id;
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        
 
         const [result] = await connection.query(`select work_state from User where user_id = '${user_id}'`);
 
-        await connection.commit();
-        return res.status(200).json(result);
+        
+        return res.status(restStatus.success).json(result);
     } catch (err) {
-        await connection.rollback();
-        return res.status(400).json(err);
+        
+        return res.status(restStatus.fail).json(err);
     } finally {
         connection.release();
     }
-})
+});//완료
 
 module.exports = router;

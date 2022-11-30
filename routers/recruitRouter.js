@@ -2,25 +2,27 @@ const express = require('express');
 const router = express.Router();
 const pool = require("../config/connectionPool");
 const status = require("../config/recruitStatus");
+const restStatus = require('../config/RestStatus');
 
 router.get("/", async(req, res) => {
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        
     const [result] = await connection.query(`SELECT r.recruit_index, wt.work_type_name, r.recruit_state, date_format(r.work_start, '%Y-%m-%d %H:%i') as work_start , date_format(r.work_end, '%Y-%m-%d %H:%i') as work_end, r.recruit_worker, r.applyment_worker FROM Recruit r
     LEFT JOIN work_type wt
      ON r.work_type_index = wt.work_type_index
-     WHERE r.recruit_state = '${status.waiting}'`);
+     WHERE r.recruit_state = '${status.waiting}'
+     order by r.work_start`);
 
-     await connection.commit();
-     return res.json(result);
+     
+     return res.status(restStatus.success).json(result);
     }catch(err) {
-        await connection.rollback();
-        return res.status(400).json(err);
+        
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }
-})
+})//확인
 
 router.post("/", async(req, res) => {
     console.log(req.body);
@@ -32,10 +34,10 @@ router.post("/", async(req, res) => {
         const result = await connection.query(`Insert Into Recruit(work_type_index, work_start, work_end, recruit_worker) values ('${work_type_index}','${work_start}', '${work_end}', '${recruit_worker}')`);
         console.log(result.query);
         await connection.commit();
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     }catch(err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }
@@ -67,10 +69,10 @@ router.post("/delete", async(req, res) => {
         const result = await connection.query(query);
 
         await connection.commit();
-        return res.json(result);
+        return res.status(restStatus.success).json(result);
     }catch(err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }

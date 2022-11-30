@@ -1,23 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const pool = require("../config/connectionPool");
+const restStatus = require('../config/RestStatus');
 
 router.get("/", async(req, res) => {
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        
 
         const [result] = await connection.query(`select w.wage_index, wo.work_type_index, wo.work_type_name, date_format(w.change_date, '%Y-%m-%d') as change_date, w.hour_wage from wage w
         join work_type wo
-        where w.work_type_index = wo.work_type_index`);
+        where w.work_type_index = wo.work_type_index
+        order by change_date desc`);
 
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     }catch(err) {
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }
-})
+})//완료
 
 router.post("/", async(req, res) => {
     const {work_type_name, change_date, wage} = req.body;
@@ -28,10 +30,10 @@ router.post("/", async(req, res) => {
         const result = await connection.query(`call Make_work_type_wage('${work_type_name}', '${change_date}', '${wage}')`)
 
         await connection.commit();
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     }catch(err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally {
         connection.release();
     }
@@ -61,10 +63,10 @@ router.post("/delete", async(req, res) => {
         const result = await connection.query(query);
 
         await connection.commit();
-        return res.status(200).json(result);
+        return res.status(restStatus.success).json(result);
     }catch(err) {
         await connection.rollback();
-        return res.status(400).json(err);
+        return res.status(restStatus.fail).json(err);
     }finally{
         connection.release();
     }
