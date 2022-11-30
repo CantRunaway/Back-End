@@ -225,7 +225,7 @@ router.post("/login", async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        const [result] = await connection.query(`Select exists (select user_index from User where user_id = '${user_id}' and password = md5('${password}')) as exist`);
+        const [result] = await connection.query(`Select exists (select user_index from User where user_id = '${user_id}' and password = md5('${password}') and registration_state = 1) as exist`);
 
         await connection.commit();
 
