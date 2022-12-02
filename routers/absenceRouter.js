@@ -26,6 +26,32 @@ router.post("/:user_id", async (req, res) => {
     }
 });//완성
 
+router.post("/createList/:user_id", async(req, res) => {
+    const user_id = req.params.user_id;
+    const ids = req.body;
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [index] = await connection.query(`select user_index from user where user_id = '${user_id}'`);
+        const user_index = index[0].user_index;
+        let arr = [];
+        for (let i = 0; i < ids.length; i++) {
+            arr.push([`${status.waiting}`, `${arr[i].absence_start}`, `${arr[i].absence_end}`, `${user_index}`]);
+        }
+
+        const result = await connection.query(`Insert Into Absence(absence_state, absence_start, absence_end, user_index) values ?`, [arr]);
+
+        await connection.commit();
+        return res.status(restStatus.success).json(result);
+
+    }catch(err) {
+        await connection.rollback();
+        return res.status(restStatus.fail).json(err);
+    }finally {
+        connection.release();
+    }
+})
+
 router.get("/:user_id", async(req, res) => {
     const user_id = req.params.user_id;
     const connection = await pool.getConnection();
