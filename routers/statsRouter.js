@@ -27,7 +27,7 @@ router.get("/:year/:month/:user_id", async(req, res) => {
     const user_id = req.params.user_id;
     const connection = await pool.getConnection();
     try {
-        const [result] = await connection.query(`select sum(hour) as hour, sum(wage) as wage , date_format(date, '%Y-%m-%d') as date from stats
+        const [result] = await connection.query(`select sum(hour) as hour, sum(wage) as wage from stats
         where year(date) = '${year}'
         and month(date) = '${month}'
         and user_id = '${user_id}'`);
