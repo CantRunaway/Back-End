@@ -4,8 +4,6 @@ const pool = require("../config/connectionPool");
 const restStatus = require('../config/RestStatus');
 const key = require("../config/encryptionKey");
 const encryptionKey = key.key;
-const fs = require('fs');
-const xlsx = require('xlsx');
 
 router.post("/:user_id", async(req,res) => {
     const user_id = req.params.user_id;
