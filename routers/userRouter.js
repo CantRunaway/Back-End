@@ -261,7 +261,7 @@ router.post("/update", async (req, res) => {
         await connection.beginTransaction();
 
         const result = await connection.query(`Update User set 
-        password = CASE WHEN md5('${password}') != password AND '${password}' IS NOT NULL THEN md5('${password}') ELSE password END, 
+        password = CASE WHEN md5('${password}') != password AND '${password}' != '' THEN md5('${password}') ELSE password END, 
         name = CASE WHEN '${name}' != name AND '${name}' IS NOT NULL THEN '${name}' ELSE name END,
         grade = CASE WHEN '${grade}' != grade AND '${grade}' IS NOT NULL THEN '${grade}' ELSE grade END,
         phone = CASE WHEN '${phone}' != hex(aes_encrypt('${phone}', '${encryptionKey}')) AND '${phone}' IS NOT NULL THEN hex(aes_encrypt('${phone}', '${encryptionKey}')) ELSE phone END,
