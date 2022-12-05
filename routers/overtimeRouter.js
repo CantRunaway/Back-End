@@ -109,7 +109,7 @@ router.get("/", async(req, res) => {
         and o.recruit_index = r.recruit_index
         and r.work_end >= now()
         group by overtime_index`);
-
+            
         return res.status(restStatus.success).json(result);
     }catch(err) {
         return res.status(restStatus.fail).json(err);
