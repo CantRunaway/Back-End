@@ -47,7 +47,7 @@ router.put("/excel/:year/:month", async(req, res) => {
     const month = req.params.month;
     const year = req.params.year;
     try {
-        const [result] = await connection.query(`SELECT s.user_id, u.name, concat(sum(s.hour), '시간') as hour, concat(format(sum(s.wage), 0), '원') as wage, date_format(s.date, '%Y년 %m월') as date, concat(' ') as '서명란' FROM stats s
+        const [result] = await connection.query(`SELECT s.user_id as '학번', u.name as '이름', concat(sum(s.hour), '시간') as '근무 시간', concat(format(sum(s.wage), 0), '원') as '월급', date_format(s.date, '%Y년 %m월') as '월', concat(' ') as '서명란' FROM stats s
         join user u
         where s.user_id = u.user_id
         and year(date) = '${year}'
