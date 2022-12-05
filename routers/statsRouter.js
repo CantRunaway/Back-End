@@ -42,7 +42,7 @@ router.get("/:year/:month/:user_id", async(req, res) => {
     }
 })
 
-router.get("/excel/:year/:month", async(req, res) => {
+router.put("/excel/:year/:month", async(req, res) => {
     const connection = await pool.getConnection();    
     const month = req.params.month;
     const year = req.params.year;
@@ -54,7 +54,7 @@ router.get("/excel/:year/:month", async(req, res) => {
         and month(date) = '${month}'
                 group by user_id, month(date)
                  order by date`)
-        
+        console.log(result);
         return res.status(restStatus.success).json(result);
         
     }catch(err) {
