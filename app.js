@@ -27,7 +27,7 @@ app.set('port', process.env.PORT || port);
 
 const server = async () => {
     try {
-        app.use(cors({origin: "http://localhost:3000"}));
+        app.use(cors({origin: `http://${LocalPort.host}:${LocalPort.corsPort}`}));
         app.use(express.json());
         app.use("/users", userRouter);
         app.use("/bank", bankRouter);
