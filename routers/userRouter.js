@@ -36,7 +36,7 @@ router.get("/userList/:user_id", async (req, res) => {
     try {
         
         const [result] = await connection.query(`Select user_id, name, grade, convert(aes_decrypt(unhex(phone), '${encryptionKey}') using utf8) as 'phone', convert(aes_decrypt(unhex(account), '${encryptionKey}') using utf8) as 'account', date_format(birth, '%Y-%m-%d') as birth, work_type_index, bank_index , department_index as major from User u
-        And u.user_type = '${userType.worker}'
+        where u.user_type = '${userType.worker}'
         And u.registration_state = '${status.approval}'
         And u.user_id = '${user_id}'
         `);
