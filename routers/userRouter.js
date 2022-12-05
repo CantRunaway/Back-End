@@ -259,7 +259,7 @@ router.get("/:user_id", async(req, res) => {
 })
 
 router.post("/update", async (req, res) => {
-    const { user_id, password, name, grade, phone, account, birth, work_type_index, bank_index, department_index } = req.body;
+    const { user_id, password, name, grade, phone, account, birth, work_type_name, bank_name, major } = req.body;
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -271,9 +271,9 @@ router.post("/update", async (req, res) => {
         phone = CASE WHEN '${phone}' != hex(aes_encrypt('${phone}', '${encryptionKey}')) AND '${phone}' IS NOT NULL THEN hex(aes_encrypt('${phone}', '${encryptionKey}')) ELSE phone END,
         account = CASE WHEN '${account}' != hex(aes_encrypt('${account}', '${encryptionKey}')) AND '${account}' IS NOT NULL THEN hex(aes_encrypt('${account}', '${encryptionKey}')) ELSE account END,
         birth = CASE WHEN '${birth}' != birth THEN '${birth}' ELSE birth END,
-        work_type_index = CASE WHEN '${work_type_index}' != work_type_index Then '${work_type_index}' ELSE work_type_index END,
-        bank_index = CASE WHEN '${bank_index}' != bank_index Then '${bank_index}' ELSE bank_index END,
-        department_index = CASE WHEN '${department_index}' != department_index Then '${department_index}' ELSE department_index END
+        work_type_index = CASE WHEN '${work_type_name}' != work_type_index Then '${work_type_name}' ELSE work_type_index END,
+        bank_index = CASE WHEN '${bank_name}' != bank_index Then '${bank_name}' ELSE bank_index END,
+        department_index = CASE WHEN '${major}' != department_index Then '${major}' ELSE department_index END
         Where user_id = '${user_id}'`);
 
         await connection.commit();
