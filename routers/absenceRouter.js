@@ -36,7 +36,7 @@ router.post("/createList/:user_id", async(req, res) => {
         const user_index = index[0].user_index;
         let arr = [];
         for (let i = 0; i < ids.length; i++) {
-            arr.push([`${status.waiting}`, `${arr[i].absence_start}`, `${arr[i].absence_end}`, `${user_index}`]);
+            arr.push([`${status.waiting}`, `${arr[i].start_time}`, `${arr[i].end_time}`, `${user_index}`]);
         }
 
         const result = await connection.query(`Insert Into Absence(absence_state, absence_start, absence_end, user_index) values ?`, [arr]);
