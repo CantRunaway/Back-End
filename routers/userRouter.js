@@ -35,7 +35,7 @@ router.get("/userList/:user_id", async (req, res) => {
     const connection = await pool.getConnection();
     try {
         
-        const [result] = await connection.query(`Select user_id, name, grade, convert(aes_decrypt(unhex(phone), '${encryptionKey}') using utf8) as 'phone', convert(aes_decrypt(unhex(account), '${encryptionKey}') using utf8) as 'account', date_format(birth, '%Y-%m-%d') as birth, wt.work_type_name, b.bank_name , d.department_name as major from User u
+        const [result] = await connection.query(`Select user_id, convert(aes_decrypt(unhex(password), '${encryptionKey}') using utf8) as password, name, grade, convert(aes_decrypt(unhex(phone), '${encryptionKey}') using utf8) as 'phone', convert(aes_decrypt(unhex(account), '${encryptionKey}') using utf8) as 'account', date_format(birth, '%Y-%m-%d') as birth, wt.work_type_name, b.bank_name , d.department_name as major from User u
         Join work_type wt, bank b, department d
         Where u.work_type_index = wt.work_type_index
         And u.bank_index = b.bank_index
