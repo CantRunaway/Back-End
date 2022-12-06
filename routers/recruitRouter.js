@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require("../config/connectionPool");
 const status = require("../config/recruitStatus");
 const restStatus = require('../config/RestStatus');
+const recruitStatus = require('../config/recruitStatus');
 
 router.get("/", async(req, res) => {
     const connection = await pool.getConnection();
@@ -31,7 +32,7 @@ router.post("/", async(req, res) => {
     try {
         await connection.beginTransaction();
 
-        const result = await connection.query(`Insert Into Recruit(work_type_index, work_start, work_end, recruit_worker) values ('${work_type_index}','${work_start}', '${work_end}', '${recruit_worker}')`);
+        const result = await connection.query(`Insert Into Recruit(work_type_index, recruit_state, work_start, work_end, recruit_worker) values ('${work_type_index}','${recruitStatus.waiting}','${work_start}', '${work_end}', '${recruit_worker}')`);
         console.log(result.query);
         await connection.commit();
         return res.status(restStatus.success).json(result);

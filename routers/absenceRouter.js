@@ -96,16 +96,17 @@ router.post("/response", async (req, res) => {
     }
 });//완성
 
-router.post("/admit", async (req, res) => {
-    ids = req.body;
+router.post("/response/admit", async (req, res) => {
+    const ids = req.body;
     let query = ``;
 
+    
     query = `update absence a join (select '${ids[0]}' as id, '${status.approval}' as state `;
     for (let i = 1; i < ids.length; i++) {
-        query += (`union all select '${ids[i]}', '${status.approval}'`)
+        query += (`union all select '${ids[i]}', '${status.approval}' `)
     }
     query += (`) vals on a.absence_index = vals.id set absence_state = state`)
-
+    console.log(query);
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -115,6 +116,7 @@ router.post("/admit", async (req, res) => {
         await connection.commit();
         return res.status(restStatus.success).json(result);
     } catch (err) {
+        console.log(req.body);
         await connection.rollback();
         return res.status(restStatus.fail).json(err);
     } finally {
@@ -123,7 +125,7 @@ router.post("/admit", async (req, res) => {
 
 })//완성
 
-router.post("/refuse", async (req, res) => {
+router.post("/response/refuse", async (req, res) => {
     ids = req.body;
     let query = ``;
 
@@ -158,6 +160,7 @@ router.get("/", async (req, res) => {
         join user u, work_type w
         where a.user_index = u.user_index
         and u.work_type_index = w.work_type_index
+        and a.absence_state = '0'
         and a.absence_end >= now()`);
 
         return res.status(restStatus.success).json(result);

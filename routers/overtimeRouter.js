@@ -108,6 +108,7 @@ router.get("/", async(req, res) => {
         where o.user_index = u.user_index
         and o.recruit_index = r.recruit_index
         and r.work_end >= now()
+        and cover_state = '0'
         group by overtime_index`);
             
         return res.status(restStatus.success).json(result);

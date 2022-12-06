@@ -23,6 +23,7 @@ router.get("/:user_id", async(req, res) => {
 
 router.post("/insertCommute", async(req, res) => {
     const {user_id, work_type_index, start_time, end_time} = req.body;
+    console.log(req.body);
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
