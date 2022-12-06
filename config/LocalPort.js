@@ -1,7 +1,7 @@
 const localPort = {
     host : "localhost",
     port : "8080",
-    corsPort : "11454"
+    corsPort : "3000"
 };
 
 Object.freeze(localPort);

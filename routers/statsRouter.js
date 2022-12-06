@@ -13,7 +13,7 @@ router.post("/:user_id", async(req,res) => {
         const [result] = await connection.query(`select hour, wage, date_format(date, '%Y-%m-%d') as date from stats
         where year(date) = '${year}'
         and month(date) = '${month}'
-        and user_id = '${user_id}'`)
+        and user_id = '${user_id}' order by date`)
 
         return res.status(restStatus.success).json(result);
     }catch(err) {
@@ -52,7 +52,7 @@ router.put("/excel/:year/:month", async(req, res) => {
         where s.user_id = u.user_id
         and year(date) = '${year}'
         and month(date) = '${month}'
-                group by user_id, month(date)
+                group by s.user_id, month(date)
                  order by date`)
         console.log(result);
         return res.status(restStatus.success).json(result);
@@ -70,7 +70,7 @@ router.get("/excel/:user_id/:year/:month", async(req, res) => {
     const month = req.params.month;
     const user_id = req.params.user_id;
     try {
-        const [result] = await connection.query(`SELECT s.user_id as '학번', u.name as '이름', s.hour as '근무 시간', s.wage as '임금', date_format(s.date, '%Y년 %m월 %d일') as date, concat(' ') as '서명란' FROM stats s
+        const [result] = await connection.query(`SELECT s.user_id as '학번', u.name as '이름', concat(s.hour, '시간' )as '근무 시간', concat(format(s.wage, 0), '원') as '임금', date_format(s.date, '%Y년 %m월 %d일') as '날짜', concat(' ') as '서명란' FROM stats s
         join user u
         where s.user_id = u.user_id
         and year(date) = '${year}'
